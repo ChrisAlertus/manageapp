@@ -1,0 +1,55 @@
+Coding Standards
+
+### Key Principles
+
+- Write concise, technical responses with accurate examples in Python. The solution should use the simplest most readable logic possible to achieve the task and try to follow SOLID principles.
+
+Also try to minimize the use ot third party imports and modules. fewer dependencies + fast builds for deployment, the better.
+
+- Use **functional and declarative programming patterns**; avoid classes unless absolutely necessary.
+- Prefer **iteration and modularization** over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., `is_active`, `has_permission`, `isLoading`, `hasError`).
+- Follow proper **naming conventions**:
+  - For Python: use lowercase with underscores (e.g., `routers/user_routes.py`).
+
+
+#### Coding Style
+Generally follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) and use [YAPF](https://gitlab.com/enshohealth/ensho-general/-/blob/master/.style.yapf) to auto-format code. There are a few notable exceptions to PEP-8:
+
+- Indent is 2-spaces, not 4-spaces and never tabs.
+- 80-character line width limit.
+
+YAPF may be disabled in special circumstances where it makes the code significantly less readable, such as for SQLAlchemy multi-line queries, or for unit test modules. We strongly encourage [type hints](https://docs.python.org/3/library/typing.html), especially on function signatures meant to be exported from a module.
+
+Imports are grouped into sections separated by a single blank line, ordered alphabetically within each group. The groups are, in order:
+
+- Python built-ins;
+- 3rd party (i.e. everything installed through pip);
+- 1st party (i.e. everything Ensho); and
+- relative imports (i.e. anything starting with `.`).
+
+All functions should have docstrings (particularly if they are part of a module or class API).
+
+```python
+def some_function(argument_one: str, argument_two: int) -> float:
+  """
+  Text describing the purpose of the function.
+
+  Args:
+    argument_one: Description of the argument's purpose, which is long and so
+        wraps onto a second line, double indented.
+    argument_two: Description of another argument.
+
+  Returns:
+    A description of the result value
+  """
+  ...
+```
+
+Documentation should be phrased in the active voice (e.g. "Compute the value of foo"), not as a description of what the function does (e.g. not "Computes the value of foo").
+
+
+### Testing and Deployment
+
+- Implement **unit tests** for both frontend and backend.
+- Ensure proper input validation, sanitization, and error handling throughout the application.
