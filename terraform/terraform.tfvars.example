@@ -1,0 +1,16 @@
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars should be in .gitignore and never committed
+
+aws_region         = "us-east-1"
+app_name           = "household-manager"
+environment        = "dev"
+domain_name        = "" # Optional: your-domain.com
+
+# Database password - use a strong password
+# In production, use AWS Secrets Manager instead
+db_password        = "CHANGE_THIS_TO_A_STRONG_PASSWORD"
+
+# Optional: Override defaults
+# db_instance_class     = "db.t3.micro"
+# db_allocated_storage  = 20
+
