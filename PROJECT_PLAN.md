@@ -71,12 +71,32 @@ A multi-platform household management application supporting expense splitting, 
 - Create database migration system (Alembic)
 - Set up environment configuration management
 - Create basic API documentation structure
+- Unit tests for:
+  - Authentication logic (password hashing, JWT token creation/validation)
+  - User model validation
+  - Security utilities
+  - Configuration management
+- Integration tests for:
+  - User registration and login workflows
+  - Authentication endpoints
+  - Database connection and migrations
+  - Error handling scenarios
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Project structure documentation
+  - Setup and installation guide (README)
+  - Code documentation for core modules
+  - Environment configuration guide
 
 **Deliverables**:
 - FastAPI application skeleton
 - User model and authentication endpoints
 - Database schema foundation
 - Docker configuration for local development
+- Unit test suite
+- Integration test suite
+- API documentation
+- Setup documentation
 
 #### Task 1.2: Household Management Core
 **Scope**: Implement household creation, membership, and basic operations
@@ -87,12 +107,30 @@ A multi-platform household management application supporting expense splitting, 
   - Listing user's households
   - Getting household details
   - Leaving a household
+  - Transferring ownership (assigning a new owner)
+  - Deleting a household (owners only)
 - Basic authorization middleware (verify household membership)
+- Unit tests for:
+  - Household model validation
+  - Membership relationship logic
+  - Authorization middleware functions
+- Integration tests for:
+  - Household creation and retrieval
+  - Membership management workflows
+  - Authorization enforcement
+  - Error handling scenarios
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with household management usage examples
+  - Code documentation for models and authorization logic
 
 **Deliverables**:
 - Household CRUD operations
 - Membership management endpoints
 - Authorization logic
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 #### Task 1.3: Email Invitation System
 **Scope**: Implement email-based household invitations
@@ -104,11 +142,29 @@ A multi-platform household management application supporting expense splitting, 
   - Listing pending invitations
   - Resending/canceling invitations
 - Email templates for invitations
+- Unit tests for:
+  - Invitation token generation and validation
+  - Email service integration (mocked)
+  - Invitation expiration logic
+  - Status transition logic
+- Integration tests for:
+  - End-to-end invitation flow (send, accept, cancel)
+  - Token expiration handling
+  - Email service error handling
+  - Duplicate invitation prevention
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Email service integration guide
+  - Update README with invitation workflow
+  - Code documentation for invitation models and services
 
 **Deliverables**:
 - Invitation system with email integration
 - Secure token-based invitation acceptance
 - Email templates
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 #### Task 1.4: User Preferences Management
 **Scope**: Implement user settings and preferences
@@ -119,11 +175,29 @@ A multi-platform household management application supporting expense splitting, 
   - Setting preferred currency (USD, CAD, BBD, BRL, EUR)
 - Default preferences on user creation
 - Currency preference validation
+- Unit tests for:
+  - Preference model validation
+  - Currency validation logic
+  - Default preference initialization
+  - Preference update logic
+- Integration tests for:
+  - Preference CRUD operations
+  - Currency validation enforcement
+  - Default preference creation on user registration
+  - Preference update workflows
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with preference management examples
+  - Supported currencies and timezone documentation
+  - Code documentation for preference models
 
 **Deliverables**:
 - User preferences model and API
 - Currency preference management
 - Settings endpoints
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 ### Phase 2: Expense Splitting Feature
 
@@ -140,10 +214,27 @@ A multi-platform household management application supporting expense splitting, 
   - Phone numbers stored for future SMS notification feature (expense breakdowns, payment reminders)
 - User preferences model (user, preferred_currency)
   - Store user's preferred currency for viewing debts (USD, CAD, BBD, BRL, EUR)
+- Unit tests for:
+  - Model validation and constraints
+  - Currency field validation
+  - Relationship integrity
+  - Percentage calculation logic
+- Integration tests for:
+  - Database schema creation and migrations
+  - Model relationships and foreign keys
+  - Data integrity constraints
+- Documentation:
+  - Database schema documentation
+  - Model relationship diagrams
+  - Update README with expense data model overview
+  - Code documentation for all expense models
 
 **Deliverables**:
 - Complete expense-related database schema with currency support
 - Database migrations
+- Unit test suite
+- Integration test suite
+- Database schema documentation
 
 #### Task 2.2: Expense CRUD Operations
 **Scope**: Implement expense creation, editing, and viewing
@@ -159,12 +250,34 @@ A multi-platform household management application supporting expense splitting, 
 - Support for external participants (by email and/or phone number)
   - Phone number validation and formatting
   - Optional phone number (email is required, phone is optional for future SMS features)
+- Unit tests for:
+  - Percentage split validation logic
+  - Currency validation
+  - Phone number validation and formatting
+  - Expense calculation logic
+  - External participant handling
+- Integration tests for:
+  - Expense CRUD operations end-to-end
+  - Percentage split validation enforcement
+  - Currency validation enforcement
+  - External participant creation and retrieval
+  - Filtering and query operations
+  - Authorization checks
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with expense management examples
+  - Phone number format documentation
+  - Supported currencies documentation
+  - Code documentation for expense service logic
 
 **Deliverables**:
 - Full expense management API
 - Validation for percentage splits (must sum to 100%)
 - Phone number validation and storage
 - Currency selection and validation
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 #### Task 2.3: Payment Tracking
 **Scope**: Track payments and calculate debts
@@ -177,11 +290,32 @@ A multi-platform household management application supporting expense splitting, 
   - Support currency conversion when displaying debts
 - Support for partial payments
 - Currency-aware payment recording
+- Unit tests for:
+  - Debt calculation algorithms
+  - Payment recording logic
+  - Currency conversion calculations
+  - Partial payment handling
+  - Debt aggregation logic
+- Integration tests for:
+  - Payment recording and retrieval
+  - Debt calculation accuracy
+  - Multi-currency debt tracking
+  - Payment history queries
+  - Edge cases (overpayment, partial payments)
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Debt calculation algorithm documentation
+  - Update README with payment tracking examples
+  - Multi-currency debt tracking guide
+  - Code documentation for payment and debt calculation logic
 
 **Deliverables**:
 - Payment tracking system
 - Debt calculation endpoints
 - Multi-currency debt tracking
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 #### Task 2.4: Debt Simplification Algorithm
 **Scope**: Implement Splitwise-style debt simplification
@@ -193,11 +327,33 @@ A multi-platform household management application supporting expense splitting, 
   - Option to simplify in user's preferred currency
 - API endpoint to get simplified debts
 - Option to apply simplification (create virtual payments)
+- Unit tests for:
+  - Debt graph construction
+  - Simplification algorithm correctness
+  - Multi-currency simplification logic
+  - Edge cases (circular debts, zero debts, single currency)
+  - Algorithm performance with various debt structures
+- Integration tests for:
+  - End-to-end debt simplification workflow
+  - Multi-currency simplification scenarios
+  - Simplified debt API endpoint
+  - Virtual payment creation
+  - Complex debt network simplification
+- Documentation:
+  - Algorithm explanation and complexity analysis
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with debt simplification examples
+  - Multi-currency simplification guide
+  - Code documentation for simplification algorithm
 
 **Deliverables**:
 - Debt simplification algorithm
 - Simplified debt visualization endpoint
 - Multi-currency debt simplification
+- Unit test suite
+- Integration test suite
+- Algorithm documentation
+- API documentation updates
 
 #### Task 2.5: Exchange Rate Integration and Currency Conversion
 **Scope**: Implement real-time exchange rate lookups and currency conversion
@@ -217,6 +373,25 @@ A multi-platform household management application supporting expense splitting, 
 - Exchange rate caching strategy:
   - Cache rates for 1 hour (or configurable TTL)
   - Fallback to last known rate if API unavailable
+- Unit tests for:
+  - Exchange rate API integration (mocked)
+  - Currency conversion calculations
+  - Caching logic and TTL handling
+  - Fallback mechanism
+  - Rate fetching error handling
+- Integration tests for:
+  - Exchange rate API integration (with test API key or mocked)
+  - Currency conversion accuracy
+  - Caching behavior
+  - Fallback to cached rates
+  - API rate limiting handling
+- Documentation:
+  - Exchange rate API integration guide
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with currency conversion examples
+  - Caching strategy documentation
+  - Supported currencies and exchange rate sources
+  - Code documentation for exchange rate service
 
 **Deliverables**:
 - Exchange rate API integration
@@ -224,6 +399,9 @@ A multi-platform household management application supporting expense splitting, 
 - Caching layer for exchange rates
 - User currency preference management
 - API endpoints for currency conversion
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 #### Task 2.6: SMS Notifications for External Participants (Future Feature)
 **Scope**: Send SMS notifications to external expense participants
@@ -235,11 +413,31 @@ A multi-platform household management application supporting expense splitting, 
 - SMS templates for expense notifications
 - Phone number verification (optional)
 - Include currency information in SMS notifications
+- Unit tests for:
+  - SMS service integration (mocked)
+  - SMS template rendering
+  - Phone number validation
+  - Opt-in/opt-out logic
+  - Currency formatting in SMS
+- Integration tests for:
+  - SMS sending workflow (with test credentials or mocked)
+  - Notification delivery tracking
+  - Opt-in/opt-out enforcement
+  - Error handling for SMS failures
+- Documentation:
+  - SMS service integration guide
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with SMS notification setup
+  - SMS template documentation
+  - Code documentation for SMS service
 
 **Deliverables**:
 - SMS service integration
 - Notification sending functionality
 - User preference management for SMS notifications
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 ### Phase 3: Chore Management Feature
 
@@ -249,10 +447,28 @@ A multi-platform household management application supporting expense splitting, 
 - ChoreAssignment model (chore, assigned_to, due_date, completed_at, status)
 - Frequency types: daily, weekly, monthly, custom (cron-like)
 - Recurrence logic storage
+- Unit tests for:
+  - Model validation and constraints
+  - Frequency type validation
+  - Recurrence logic parsing
+  - Relationship integrity
+- Integration tests for:
+  - Database schema creation and migrations
+  - Model relationships and foreign keys
+  - Data integrity constraints
+- Documentation:
+  - Database schema documentation
+  - Model relationship diagrams
+  - Update README with chore data model overview
+  - Frequency type documentation
+  - Code documentation for chore models
 
 **Deliverables**:
 - Chore and assignment database schema
 - Database migrations
+- Unit test suite
+- Integration test suite
+- Database schema documentation
 
 #### Task 3.2: Chore Scheduling Engine
 **Scope**: Implement recurring chore generation
@@ -263,11 +479,32 @@ A multi-platform household management application supporting expense splitting, 
   - Monthly: generate assignments for each month
 - Automatic assignment generation based on schedule
 - Due date calculation based on frequency
+- Unit tests for:
+  - Recurrence calculation logic
+  - Due date calculation for each frequency type
+  - Assignment generation logic
+  - Background job scheduling
+  - Edge cases (leap years, month boundaries, timezone handling)
+- Integration tests for:
+  - End-to-end chore scheduling workflow
+  - Background job execution
+  - Assignment generation accuracy
+  - Multiple frequency types
+  - Concurrent job handling
+- Documentation:
+  - Scheduling engine architecture documentation
+  - Recurrence logic explanation
+  - Background job setup guide
+  - Update README with chore scheduling examples
+  - Code documentation for scheduling engine
 
 **Deliverables**:
 - Chore scheduling system
 - Background job processor
 - Recurrence logic
+- Unit test suite
+- Integration test suite
+- Architecture documentation
 
 #### Task 3.3: Chore Management API
 **Scope**: CRUD operations for chores and assignments
@@ -279,10 +516,32 @@ A multi-platform household management application supporting expense splitting, 
   - Viewing chore calendar
 - Filtering: upcoming, overdue, completed
 - Calendar view endpoint (grouped by date)
+- Unit tests for:
+  - Chore CRUD operations logic
+  - Assignment logic
+  - Filtering and query logic
+  - Calendar view generation
+  - Status transition logic
+- Integration tests for:
+  - Chore CRUD operations end-to-end
+  - Assignment workflows
+  - Filtering and query operations
+  - Calendar view accuracy
+  - Authorization checks
+  - Status updates
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with chore management examples
+  - Calendar view API documentation
+  - Filtering options documentation
+  - Code documentation for chore service logic
 
 **Deliverables**:
 - Complete chore management API
 - Calendar view support
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 ### Phase 4: To-Do List Feature
 
@@ -292,10 +551,28 @@ A multi-platform household management application supporting expense splitting, 
 - TodoClaim model (todo, claimed_by, claimed_at)
 - TodoCompletion model (todo, completed_by, completed_at)
 - Support for categories/tags
+- Unit tests for:
+  - Model validation and constraints
+  - Priority validation
+  - Relationship integrity
+  - Category/tag handling
+- Integration tests for:
+  - Database schema creation and migrations
+  - Model relationships and foreign keys
+  - Data integrity constraints
+- Documentation:
+  - Database schema documentation
+  - Model relationship diagrams
+  - Update README with to-do data model overview
+  - Priority levels documentation
+  - Code documentation for to-do models
 
 **Deliverables**:
 - To-do list database schema
 - Database migrations
+- Unit test suite
+- Integration test suite
+- Database schema documentation
 
 #### Task 4.2: To-Do List API
 **Scope**: Implement to-do list operations
@@ -306,10 +583,31 @@ A multi-platform household management application supporting expense splitting, 
   - Marking todos as complete
   - Unclaiming todos
 - Filtering and sorting options
+- Unit tests for:
+  - Todo CRUD operations logic
+  - Claim/unclaim logic
+  - Completion tracking logic
+  - Filtering and sorting logic
+  - Status transition logic
+- Integration tests for:
+  - Todo CRUD operations end-to-end
+  - Claim/unclaim workflows
+  - Completion workflows
+  - Filtering and sorting operations
+  - Authorization checks
+  - Concurrent claim handling
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Update README with to-do list examples
+  - Filtering and sorting options documentation
+  - Code documentation for to-do service logic
 
 **Deliverables**:
 - Complete to-do list API
 - Claim/completion tracking
+- Unit test suite
+- Integration test suite
+- API documentation updates
 
 ### Phase 5: Frontend - Web Application
 
@@ -320,11 +618,30 @@ A multi-platform household management application supporting expense splitting, 
 - Configure API client (Axios or Fetch wrapper)
 - Set up authentication flow (login, token storage)
 - Basic layout and navigation structure
+- Unit tests for:
+  - API client configuration
+  - Authentication utilities
+  - Route components
+  - Navigation logic
+- Integration tests for:
+  - Authentication flow end-to-end
+  - API client error handling
+  - Route protection
+  - Token storage and retrieval
+- Documentation:
+  - Project setup guide
+  - Architecture overview
+  - Update README with web app setup instructions
+  - API client usage documentation
+  - Authentication flow documentation
 
 **Deliverables**:
 - React web application skeleton
 - Authentication UI
 - Navigation structure
+- Unit test suite
+- Integration test suite
+- Setup and architecture documentation
 
 #### Task 5.2: Household Management UI
 **Scope**: Web interface for household operations
@@ -333,9 +650,27 @@ A multi-platform household management application supporting expense splitting, 
 - Household details page
 - Invitation management UI
 - Member list
+- Unit tests for:
+  - React components
+  - Form validation
+  - State management
+  - UI interaction logic
+- Integration tests for:
+  - Household CRUD operations via UI
+  - Invitation management workflows
+  - Member management workflows
+  - Error handling and user feedback
+- Documentation:
+  - Component documentation
+  - Update README with household UI usage
+  - User guide for household management
+  - UI/UX design decisions
 
 **Deliverables**:
 - Complete household management UI
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 5.3: Expense Splitting UI
 **Scope**: Web interface for expense management
@@ -356,10 +691,31 @@ A multi-platform household management application supporting expense splitting, 
 - Expense history
   - Filter by currency
   - Show amounts in original currency with optional conversion
+- Unit tests for:
+  - Expense form validation
+  - Currency conversion UI logic
+  - Percentage split calculations
+  - Phone number validation UI
+  - Component rendering and interactions
+- Integration tests for:
+  - Expense creation and management workflows
+  - Currency conversion UI
+  - Payment recording workflows
+  - Debt visualization
+  - External participant management
+- Documentation:
+  - Component documentation
+  - Update README with expense UI usage
+  - User guide for expense management
+  - Currency conversion UI guide
+  - UI/UX design decisions
 
 **Deliverables**:
 - Complete expense management UI
 - Currency selection and conversion UI
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 5.4: Chore Management UI
 **Scope**: Web interface for chores
@@ -369,9 +725,29 @@ A multi-platform household management application supporting expense splitting, 
 - Assignment interface
 - Mark complete functionality
 - Overdue/upcoming filters
+- Unit tests for:
+  - Chore form validation
+  - Calendar view logic
+  - Filter logic
+  - Component rendering
+- Integration tests for:
+  - Chore management workflows
+  - Calendar view interactions
+  - Assignment workflows
+  - Completion workflows
+  - Filtering functionality
+- Documentation:
+  - Component documentation
+  - Update README with chore UI usage
+  - User guide for chore management
+  - Calendar view documentation
+  - UI/UX design decisions
 
 **Deliverables**:
 - Complete chore management UI
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 5.5: To-Do List UI
 **Scope**: Web interface for to-do lists
@@ -380,9 +756,27 @@ A multi-platform household management application supporting expense splitting, 
 - Claim/unclaim functionality
 - Mark complete interface
 - Filtering and sorting
+- Unit tests for:
+  - Todo form validation
+  - Claim/unclaim logic
+  - Filtering and sorting logic
+  - Component rendering
+- Integration tests for:
+  - Todo management workflows
+  - Claim/unclaim workflows
+  - Completion workflows
+  - Filtering and sorting functionality
+- Documentation:
+  - Component documentation
+  - Update README with to-do UI usage
+  - User guide for to-do lists
+  - UI/UX design decisions
 
 **Deliverables**:
 - Complete to-do list UI
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 5.6: User Settings/Preferences UI
 **Scope**: Web interface for user preferences
@@ -390,10 +784,26 @@ A multi-platform household management application supporting expense splitting, 
 - Currency preference selector (USD, CAD, BBD, BRL, EUR)
 - Display currency conversion settings
 - Other user preferences (timezone, notifications, etc.)
+- Unit tests for:
+  - Settings form validation
+  - Preference update logic
+  - Component rendering
+- Integration tests for:
+  - Settings update workflows
+  - Preference persistence
+  - Currency preference changes
+- Documentation:
+  - Component documentation
+  - Update README with settings UI usage
+  - User guide for preferences
+  - UI/UX design decisions
 
 **Deliverables**:
 - User settings UI
 - Currency preference management
+- Unit test suite
+- Integration test suite
+- User documentation
 
 ### Phase 6: Frontend - Mobile Application
 
@@ -404,11 +814,30 @@ A multi-platform household management application supporting expense splitting, 
 - Configure API client
 - Set up authentication flow
 - Basic app structure and theming
+- Unit tests for:
+  - API client configuration
+  - Authentication utilities
+  - Navigation logic
+  - Theme configuration
+- Integration tests for:
+  - Authentication flow end-to-end
+  - API client error handling
+  - Route protection
+  - Token storage and retrieval
+- Documentation:
+  - Mobile app setup guide
+  - Architecture overview
+  - Update README with mobile app setup instructions
+  - API client usage documentation
+  - Authentication flow documentation
 
 **Deliverables**:
 - React Native app skeleton
 - Authentication screens
 - Navigation structure
+- Unit test suite
+- Integration test suite
+- Setup and architecture documentation
 
 #### Task 6.2: Mobile - Household Management
 **Scope**: Mobile UI for household operations
@@ -416,9 +845,27 @@ A multi-platform household management application supporting expense splitting, 
 - Create/join household screens
 - Invitation management
 - Member list
+- Unit tests for:
+  - React Native components
+  - Form validation
+  - State management
+  - UI interaction logic
+- Integration tests for:
+  - Household CRUD operations via mobile UI
+  - Invitation management workflows
+  - Member management workflows
+  - Error handling and user feedback
+- Documentation:
+  - Component documentation
+  - Update README with mobile household UI usage
+  - User guide for household management
+  - Mobile UI/UX design decisions
 
 **Deliverables**:
 - Mobile household management screens
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 6.3: Mobile - Expense Splitting
 **Scope**: Mobile UI for expenses
@@ -435,10 +882,31 @@ A multi-platform household management application supporting expense splitting, 
   - Currency-aware payment entry
 - Simplified debts view
   - Multi-currency support with conversion
+- Unit tests for:
+  - Expense form validation
+  - Currency conversion UI logic
+  - Percentage split calculations
+  - Phone number validation UI
+  - Component rendering and interactions
+- Integration tests for:
+  - Expense creation and management workflows
+  - Currency conversion UI
+  - Payment recording workflows
+  - Debt visualization
+  - External participant management
+- Documentation:
+  - Component documentation
+  - Update README with mobile expense UI usage
+  - User guide for expense management
+  - Currency conversion UI guide
+  - Mobile UI/UX design decisions
 
 **Deliverables**:
 - Mobile expense management screens
 - Currency selection and conversion UI
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 6.4: Mobile - Chore Management
 **Scope**: Mobile UI for chores
@@ -446,18 +914,50 @@ A multi-platform household management application supporting expense splitting, 
 - Chore detail and completion
 - Calendar view
 - Create/edit chore screens
+- Unit tests for:
+  - Chore form validation
+  - Calendar view logic
+  - Component rendering
+- Integration tests for:
+  - Chore management workflows
+  - Calendar view interactions
+  - Completion workflows
+- Documentation:
+  - Component documentation
+  - Update README with mobile chore UI usage
+  - User guide for chore management
+  - Mobile UI/UX design decisions
 
 **Deliverables**:
 - Mobile chore management screens
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 6.5: Mobile - To-Do List
 **Scope**: Mobile UI for to-do lists
 - To-do list screen
 - Create/edit todo screens
 - Claim and complete functionality
+- Unit tests for:
+  - Todo form validation
+  - Claim/unclaim logic
+  - Component rendering
+- Integration tests for:
+  - Todo management workflows
+  - Claim/unclaim workflows
+  - Completion workflows
+- Documentation:
+  - Component documentation
+  - Update README with mobile to-do UI usage
+  - User guide for to-do lists
+  - Mobile UI/UX design decisions
 
 **Deliverables**:
 - Mobile to-do list screens
+- Unit test suite
+- Integration test suite
+- User documentation
 
 #### Task 6.6: Mobile - User Settings/Preferences
 **Scope**: Mobile UI for user preferences
@@ -465,10 +965,26 @@ A multi-platform household management application supporting expense splitting, 
 - Currency preference selector (USD, CAD, BBD, BRL, EUR)
 - Display currency conversion settings
 - Other user preferences
+- Unit tests for:
+  - Settings form validation
+  - Preference update logic
+  - Component rendering
+- Integration tests for:
+  - Settings update workflows
+  - Preference persistence
+  - Currency preference changes
+- Documentation:
+  - Component documentation
+  - Update README with mobile settings UI usage
+  - User guide for preferences
+  - Mobile UI/UX design decisions
 
 **Deliverables**:
 - Mobile user settings screens
 - Currency preference management
+- Unit test suite
+- Integration test suite
+- User documentation
 
 ### Phase 7: Infrastructure & Deployment
 
@@ -498,6 +1014,24 @@ A multi-platform household management application supporting expense splitting, 
   - Test platform detection logic
   - Verify configuration loading for each platform
   - Ensure backward compatibility with local development
+- Unit tests for:
+  - Platform detection logic
+  - Configuration loading for each platform
+  - Environment variable normalization
+  - Fallback mechanism
+  - Database connection string parsing
+- Integration tests for:
+  - End-to-end configuration loading
+  - Platform-specific configuration scenarios
+  - Local development compatibility
+  - Error handling for missing configurations
+- Documentation:
+  - Deployment abstraction architecture
+  - Platform-specific setup guides
+  - Environment variable reference
+  - Update README with deployment instructions
+  - Migration guide between platforms
+  - Code documentation for deployment module
 
 **Deliverables**:
 - Deployment abstraction module
@@ -505,7 +1039,9 @@ A multi-platform household management application supporting expense splitting, 
 - Render.com configuration support (optional)
 - Platform detection and configuration loading
 - Documentation for platform-specific setup
-- Unit tests for deployment abstraction
+- Unit test suite
+- Integration test suite
+- Deployment documentation
 
 **Implementation Notes**:
 - Should be implemented early (Phase 1 or early Phase 2) to prevent platform-specific code from being introduced
@@ -521,11 +1057,29 @@ A multi-platform household management application supporting expense splitting, 
 - Environment variables and secrets management
 - Networking configuration (if needed)
 - Email service configuration
+- Unit tests for:
+  - Terraform configuration validation
+  - Variable validation
+  - Resource configuration logic
+- Integration tests for:
+  - Terraform plan validation
+  - Infrastructure provisioning (in test environment)
+  - Configuration correctness
+- Documentation:
+  - Terraform configuration guide
+  - Infrastructure architecture documentation
+  - Update README with infrastructure setup
+  - Deployment procedures
+  - Environment variable management guide
+  - Code documentation for Terraform modules
 
 **Deliverables**:
 - Terraform configuration files
 - Infrastructure documentation
 - Deployment scripts
+- Unit test suite
+- Integration test suite
+- Infrastructure documentation
 
 #### Task 7.3: CI/CD Pipeline
 **Scope**: Set up automated deployment
@@ -535,11 +1089,30 @@ A multi-platform household management application supporting expense splitting, 
 - Deployment to staging/production
 - Database migration automation
 - Platform-specific CI/CD configuration (Railway, Render, etc.)
+- Unit tests for:
+  - CI/CD workflow validation
+  - Build script logic
+  - Deployment script validation
+- Integration tests for:
+  - CI/CD pipeline execution (in test environment)
+  - Build process validation
+  - Deployment process validation
+  - Database migration automation
+- Documentation:
+  - CI/CD pipeline architecture
+  - GitHub Actions workflow documentation
+  - Update README with CI/CD setup
+  - Deployment procedures
+  - Troubleshooting guide
+  - Code documentation for CI/CD scripts
 
 **Deliverables**:
 - CI/CD pipeline configuration
 - Automated deployment process
 - Platform-specific deployment workflows
+- Unit test suite
+- Integration test suite
+- CI/CD documentation
 
 #### Task 7.4: Production Deployment
 **Scope**: Deploy application to production
@@ -549,12 +1122,32 @@ A multi-platform household management application supporting expense splitting, 
 - Database backup strategy
 - Environment configuration
 - Optional: Set up Render.com as backup/secondary platform
+- Unit tests for:
+  - Production configuration validation
+  - Monitoring setup validation
+  - Backup script logic
+- Integration tests for:
+  - Production deployment validation
+  - Monitoring and logging verification
+  - Backup process validation
+  - SSL configuration verification
+- Documentation:
+  - Production deployment guide
+  - Monitoring and logging setup
+  - Database backup procedures
+  - Update README with production deployment instructions
+  - Troubleshooting guide
+  - Runbook for common operations
+  - Code documentation for production scripts
 
 **Deliverables**:
 - Live production application on Railway.app
 - Monitoring setup
 - Documentation
 - Optional: Secondary deployment on Render.com
+- Unit test suite
+- Integration test suite
+- Production deployment documentation
 
 ## Database Schema Summary
 
