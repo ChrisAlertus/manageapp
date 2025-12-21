@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import auth, households
+from app.api.v1 import auth, households, invitations
 from app.core.config import settings
 
 
@@ -35,6 +35,10 @@ app.include_router(
     households.router,
     prefix=f"{settings.API_V1_STR}/households",
     tags=["households"])
+app.include_router(
+    invitations.router,
+    prefix=f"{settings.API_V1_STR}",
+    tags=["invitations"])
 
 
 @app.get("/")

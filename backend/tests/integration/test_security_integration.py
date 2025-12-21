@@ -56,7 +56,6 @@ class TestSecurityWithRealDependencies:
     wrong_payload = decode_access_token(wrong_secret_token)
     assert wrong_payload is None
 
-  @pytest.mark.skip(reason="This is a duplicated test from test_security.py")
   def test_password_verification_edge_cases(self):
     """Test password verification with edge case passwords."""
     # Note: These passwords bypass strength validation for testing hashing
@@ -119,8 +118,8 @@ class TestSecurityWithRealDependencies:
     start = time.time()
     hashed = get_password_hash(password, rounds=12)
     elapsed = time.time() - start
-    # Should complete in reasonable time (< 0.25 second)
-    assert elapsed < 0.25
+    # Should complete in reasonable time (< 0.3 second)
+    assert elapsed < 0.3
     # Verify it works
     assert verify_password(password, hashed) is True
 

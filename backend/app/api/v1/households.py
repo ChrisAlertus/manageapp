@@ -157,6 +157,53 @@ def leave_household(
   return None
 
 
+@router.delete(
+    "/{household_id}/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def remove_household_member(
+    household_id: int,
+    user_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+  """
+  Remove a member from a household (kick out).
+
+  Only owners can remove members. Removing the last remaining owner is blocked.
+  """
+  _household, _ = get_household_owner_or_403(household_id, current_user, db)
+
+  membership = (
+      db.query(HouseholdMember).filter(
+          HouseholdMember.household_id == household_id,
+          HouseholdMember.user_id == user_id,
+      ).first())
+  if membership is None:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Member not found",
+    )
+
+  # Block removing the last owner
+  if membership.role == "owner":
+    owner_count = (
+        db.query(HouseholdMember).filter(
+            HouseholdMember.household_id == household_id,
+            HouseholdMember.role == "owner",
+        ).count())
+    if owner_count == 1:
+      raise HTTPException(
+          status_code=status.HTTP_400_BAD_REQUEST,
+          detail="Cannot remove member: they are the last owner. "
+          "Please transfer ownership first.",
+      )
+
+  db.delete(membership)
+  db.commit()
+  return None
+
+
 @router.post(
     "/{household_id}/transfer-ownership",
     status_code=status.HTTP_204_NO_CONTENT,

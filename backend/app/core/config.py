@@ -28,6 +28,14 @@ class Settings(BaseSettings):
       "http://localhost:8080",
   ]
 
+  # Invitations / Email
+  INVITATION_EXPIRE_HOURS: int = 168  # 7 days
+  INVITATION_ACCEPT_URL_BASE: str = "http://localhost:3000/invitations/accept"
+
+  EMAIL_PROVIDER: str = "console"  # console | resend
+  EMAIL_FROM: str = "no-reply@localhost"
+  RESEND_API_KEY: str | None = None
+
   model_config = SettingsConfigDict(
       env_file=".env",
       case_sensitive=True,
