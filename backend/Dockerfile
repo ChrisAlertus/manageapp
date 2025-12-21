@@ -25,7 +25,7 @@ RUN uv pip install --system --no-cache \
     pydantic==2.5.0 \
     pydantic-settings==2.1.0 \
     "python-jose[cryptography]==3.3.0" \
-    "passlib[bcrypt]==1.7.4" \
+    bcrypt==5.0.0 \
     python-multipart==0.0.6 \
     email-validator==2.1.0
 

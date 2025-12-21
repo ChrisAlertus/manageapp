@@ -5,6 +5,24 @@ from unittest.mock import patch
 
 import pytest
 
+
+def pytest_configure(config):
+  """
+  Configure pytest and set up test environment variables.
+
+  This runs before test collection to ensure required environment
+  variables are set before any modules are imported.
+  """
+  # Set required environment variables for tests
+  # Always set these to ensure tests can run without .env file
+  test_env = {
+      "SECRET_KEY": "test-secret-key-for-pytest-12345",
+      "DATABASE_URL": "postgresql://test:test@localhost:5432/test_db",
+  }
+  for key, value in test_env.items():
+    os.environ[key] = value
+
+
 from app.core.deployment import DeploymentConfig
 
 
@@ -61,3 +79,41 @@ def deployment_config():
         return DeploymentConfig()
 
   return _create_config
+
+
+@pytest.fixture
+def test_secret_key():
+  """Fixture providing a test secret key for JWT tokens."""
+  return "test-secret-key-for-jwt-tokens-12345"
+
+
+@pytest.fixture
+def test_user_data():
+  """Fixture providing test user data for tokens."""
+  return {"sub": 1, "email": "test@example.com"}
+
+
+@pytest.fixture
+def test_password():
+  """Fixture providing a test password."""
+  return "test_password_123"
+
+
+@pytest.fixture(autouse=True)
+def fast_bcrypt(monkeypatch):
+  """
+  Automatically use faster bcrypt rounds for all tests.
+
+  This fixture reduces bcrypt cost factor from 12 (default) to 4 for tests,
+  making password hashing ~256x faster while still testing the same logic.
+  """
+  from app.core import security
+
+  # Patch get_password_hash to use rounds=4 by default in tests
+  original_hash = security.get_password_hash
+
+  def patched_hash(password: str, rounds: int = 4) -> str:
+    """Patched version that defaults to fast rounds for tests."""
+    return original_hash(password, rounds=rounds)
+
+  monkeypatch.setattr(security, "get_password_hash", patched_hash)

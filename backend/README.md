@@ -230,10 +230,10 @@ The project includes comprehensive unit and integration tests for the deployment
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (fast, no coverage)
 pytest
 
-# Run with coverage
+# Run with coverage (slower, for CI/reports)
 pytest --cov=app --cov-report=html
 
 # Run specific test file
@@ -241,7 +241,19 @@ pytest tests/unit/test_deployment.py
 
 # Run integration tests
 pytest tests/integration/
+
+# Run only unit tests (fastest)
+pytest tests/unit/ -m unit
+
+# Run tests in parallel (requires pytest-xdist)
+pytest -n auto
 ```
+
+**Performance Tips:**
+- Coverage is disabled by default for faster test runs
+- Tests automatically use faster bcrypt rounds (4 instead of 12)
+- Use `-m unit` to skip slower integration tests during development
+- Use `-n auto` with pytest-xdist for parallel test execution
 
 ### Test Structure
 
