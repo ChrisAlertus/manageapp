@@ -9,6 +9,7 @@ FastAPI backend for the Household Management Application.
 - Alembic database migrations
 - Docker support for local development
 - Automatic API documentation (Swagger/OpenAPI)
+- **Deployment abstraction layer** for multi-platform support (Railway.app, Render.com, GCP, AWS)
 
 ## Setup
 
@@ -224,7 +225,34 @@ uv pip sync requirements.txt
 
 ## Testing
 
-(To be implemented)
+The project includes comprehensive unit and integration tests for the deployment abstraction layer.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+
+# Run specific test file
+pytest tests/unit/test_deployment.py
+
+# Run integration tests
+pytest tests/integration/
+```
+
+### Test Structure
+
+- **Unit Tests**: `tests/unit/` - Fast, isolated tests for individual components
+- **Integration Tests**: `tests/integration/` - Tests for real-world deployment scenarios
+- **Fixtures**: `tests/conftest.py` - Shared test fixtures
+
+### Documentation
+
+- [Testing Guide](README_TESTING.md) - Complete testing documentation
+- [Deployment Documentation](docs/DEPLOYMENT.md) - Deployment abstraction details
 
 ## License
 

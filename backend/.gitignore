@@ -20,6 +20,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Dependencies
+# Note: uv.lock SHOULD be committed for reproducible builds
+# (similar to package-lock.json, Pipfile.lock, poetry.lock)
+
 # Virtual Environment
 venv/
 env/
@@ -48,6 +52,7 @@ alembic/versions/*.pyc
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.*
 
 # Logs
 *.log
