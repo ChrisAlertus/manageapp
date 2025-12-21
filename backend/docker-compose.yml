@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: manageapp_db
+    environment:
+      POSTGRES_USER: manageapp_user
+      POSTGRES_PASSWORD: manageapp_password
+      POSTGRES_DB: manageapp_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manageapp_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: manageapp_backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://manageapp_user:manageapp_password@db:5432/manageapp_db
+      # SECRET_KEY is crucial for security (e.g., JWT signing) and should never be a hardcoded or public value in production.
+      # Do NOT commit production secrets to your repository (including .env files with real secrets).
+      #
+      # To securely provide SECRET_KEY in CI/CD without exposing it in plaintext in your repo:
+      #   1. Store the SECRET_KEY as a protected/secret variable in your CI/CD platform (e.g., GitHub Actions secrets, GitLab CI/CD variables, CircleCI environment variables, etc).
+      #   2. During the build/deployment pipeline, inject it at runtime:
+      #      - For GitHub Actions, use:
+      #          env:
+      #            SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      #        and in your docker compose command:
+      #          docker compose up
+      #      - Or generate an .env file dynamically in CI/CD from secrets (never from committed files).
+      #      - Or pass it inline:
+      #          docker compose run -e SECRET_KEY="$SECRET_KEY" backend
+      #
+      # If you must use an env file, generate and inject it in the pipeline, never commit it with the secret inside.
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DEBUG=True
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
+

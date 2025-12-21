@@ -27,12 +27,15 @@ A multi-platform household management application supporting expense splitting, 
 - **UI Framework**: React Native Paper (mobile) + Material-UI or Tailwind CSS (web)
 
 ### Infrastructure & Deployment
-- **Cloud Provider**: Railway.app or Render.com (generous free tiers, simpler than AWS)
-  - Alternative: AWS (more complex but more control)
-- **Database**: Railway PostgreSQL or AWS RDS (free tier)
+- **Cloud Provider**: Railway.app (primary, with Render.com support via abstraction layer)
+  - Railway.app: $5/month free credit, PostgreSQL included, simple deployment
+  - Render.com: Free tier available, supported via deployment abstraction layer for portability
+  - Alternative: AWS/GCP (more complex but more control, supported via abstraction layer)
+- **Database**: Railway PostgreSQL (primary) or Render PostgreSQL (via abstraction layer)
 - **Containerization**: Docker
-- **Infrastructure as Code**: Terraform
+- **Infrastructure as Code**: Terraform (for AWS/GCP, Railway/Render use platform-native tools)
 - **CI/CD**: GitHub Actions (free for public repos)
+- **Deployment Abstraction**: Platform-agnostic configuration layer for easy migration between platforms
 
 ## Architecture Overview
 
@@ -469,7 +472,48 @@ A multi-platform household management application supporting expense splitting, 
 
 ### Phase 7: Infrastructure & Deployment
 
-#### Task 7.1: Infrastructure as Code (Terraform)
+**Note**: Task 7.1 (Deployment Abstraction Layer) should be implemented early in development (during Phase 1 or early Phase 2) to ensure platform portability from the start.
+
+#### Task 7.1: Deployment Abstraction Layer
+**Scope**: Create platform-agnostic deployment configuration layer for multi-platform support
+- Create deployment abstraction module (`app/core/deployment.py`)
+  - Platform detection (Railway, Render, GCP, AWS, local)
+  - Platform-specific configuration handling
+  - Environment variable normalization
+- Support for Railway.app deployment
+  - Railway-specific configuration detection
+  - Railway environment variable handling
+  - Railway database connection string parsing
+- Support for Render.com deployment (optional, for future portability)
+  - Render-specific configuration detection
+  - Render environment variable handling
+  - Render database connection string parsing
+- Platform-agnostic configuration defaults
+  - Fallback values for local development
+  - Platform detection via environment variables (`DEPLOYMENT_PLATFORM`, `RAILWAY_ENVIRONMENT`, `RENDER`)
+- Documentation for platform-specific requirements
+  - Environment variable documentation
+  - Platform-specific deployment instructions
+- Testing and validation
+  - Test platform detection logic
+  - Verify configuration loading for each platform
+  - Ensure backward compatibility with local development
+
+**Deliverables**:
+- Deployment abstraction module
+- Railway.app configuration support
+- Render.com configuration support (optional)
+- Platform detection and configuration loading
+- Documentation for platform-specific setup
+- Unit tests for deployment abstraction
+
+**Implementation Notes**:
+- Should be implemented early (Phase 1 or early Phase 2) to prevent platform-specific code from being introduced
+- Keep platform-specific logic isolated in the abstraction layer
+- All application code should use the abstraction layer, not platform-specific APIs directly
+- Makes future migration between platforms straightforward (1-2 hours for Railway ↔ Render, 4-8 hours for Railway → GCP)
+
+#### Task 7.2: Infrastructure as Code (Terraform)
 **Scope**: Define infrastructure using Terraform
 - Cloud provider selection and configuration
 - Database instance (PostgreSQL)
@@ -483,30 +527,34 @@ A multi-platform household management application supporting expense splitting, 
 - Infrastructure documentation
 - Deployment scripts
 
-#### Task 7.2: CI/CD Pipeline
+#### Task 7.3: CI/CD Pipeline
 **Scope**: Set up automated deployment
 - GitHub Actions workflows
 - Build and test automation
 - Docker image building
 - Deployment to staging/production
 - Database migration automation
+- Platform-specific CI/CD configuration (Railway, Render, etc.)
 
 **Deliverables**:
 - CI/CD pipeline configuration
 - Automated deployment process
+- Platform-specific deployment workflows
 
-#### Task 7.3: Production Deployment
+#### Task 7.4: Production Deployment
 **Scope**: Deploy application to production
-- Set up production environment
+- Set up production environment on Railway.app (primary platform)
 - Configure domain and SSL
 - Set up monitoring and logging
 - Database backup strategy
 - Environment configuration
+- Optional: Set up Render.com as backup/secondary platform
 
 **Deliverables**:
-- Live production application
+- Live production application on Railway.app
 - Monitoring setup
 - Documentation
+- Optional: Secondary deployment on Render.com
 
 ## Database Schema Summary
 
@@ -552,22 +600,27 @@ A multi-platform household management application supporting expense splitting, 
 
 ## Free Tier Cloud Options
 
-### Railway.app
+### Railway.app (Primary Platform)
 - $5/month free credit
 - PostgreSQL included
 - Simple deployment
-- Good for MVP
+- Good for MVP and initial testing
+- **Selected as primary deployment platform**
 
-### Render.com
+### Render.com (Secondary/Supported Platform)
 - Free tier for web services (with limitations)
 - PostgreSQL free tier available
 - Simple setup
+- **Supported via deployment abstraction layer (Task 7.1)**
+- Easy migration path from Railway (1-2 hours)
 
-### AWS (More Complex)
-- Free tier for 12 months
-- RDS PostgreSQL (limited)
+### AWS/GCP (Future/Advanced)
+- AWS: Free tier for 12 months, RDS PostgreSQL (limited)
+- GCP: Free tier available, Cloud SQL PostgreSQL
 - More configuration required
-- Better for scaling
+- Better for scaling and enterprise use
+- **Supported via deployment abstraction layer (Task 7.1)**
+- Medium complexity migration from Railway (4-8 hours)
 
 ## Development Workflow Recommendations
 
@@ -590,6 +643,8 @@ A multi-platform household management application supporting expense splitting, 
 1. Review and refine this plan
 2. Set up project repository structure
 3. Begin with Task 1.1 (Backend API Foundation)
-4. Set up local development environment
-5. Create initial Terraform configuration for infrastructure planning
+4. Implement Task 7.1 (Deployment Abstraction Layer) early in Phase 1 to ensure platform portability
+5. Set up local development environment
+6. Deploy to Railway.app for initial testing (with Render.com support via abstraction layer)
+7. Create initial Terraform configuration for infrastructure planning (for future AWS/GCP migration)
 

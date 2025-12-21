@@ -28,7 +28,7 @@ Imports are grouped into sections separated by a single blank line, ordered alph
 - 1st party (i.e. everything Ensho); and
 - relative imports (i.e. anything starting with `.`).
 
-All functions should have docstrings (particularly if they are part of a module or class API).
+All functions should have docstrings (particularly if they are part of a module or class API). In additon, when defining sqlalchemy tables, the docstirng should describe the table and also include a list of the columns with their names and descriptions of the information they represent.
 
 ```python
 def some_function(argument_one: str, argument_two: int) -> float:
@@ -43,6 +43,25 @@ def some_function(argument_one: str, argument_two: int) -> float:
   Returns:
     A description of the result value
   """
+  ...
+```
+
+```python
+class User(Base):
+  """User model for authentication and user data.
+
+  Columns:
+    id: The user's unique identifier
+    email: The user's email address
+    hashed_password: The user's hashed password
+    full_name: The user's full name
+    is_active: Whether the user is active
+    is_verified: Whether the user has been verified
+    created_at: The date and time the user was created
+    updated_at: The date and time the user was last updated
+  """
+
+  __tablename__ = "users"
   ...
 ```
 
