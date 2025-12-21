@@ -107,6 +107,7 @@ A multi-platform household management application supporting expense splitting, 
   - Listing user's households
   - Getting household details
   - Leaving a household
+  - Removing/kicking a member from a household (owners only)
   - Transferring ownership (assigning a new owner)
   - Deleting a household (owners only)
 - Basic authorization middleware (verify household membership)
@@ -648,8 +649,15 @@ A multi-platform household management application supporting expense splitting, 
 - Household list/dashboard
 - Create household form
 - Household details page
-- Invitation management UI
 - Member list
+  - Transfer ownership screen/flow (select new owner from members, confirm)
+  - Remove/kick member action (owners only, confirm)
+- Invitation management UI
+  - View outstanding invitations (pending, not expired)
+  - Send invitation (email + role)
+  - Resend invitation
+  - Revoke/cancel invitation
+  - Accept invitation screen/route (token-based deep link / URL)
 - Unit tests for:
   - React components
   - Form validation
@@ -843,8 +851,15 @@ A multi-platform household management application supporting expense splitting, 
 **Scope**: Mobile UI for household operations
 - Household dashboard
 - Create/join household screens
-- Invitation management
 - Member list
+  - Transfer ownership screen/flow (select new owner from members, confirm)
+  - Remove/kick member action (owners only, confirm)
+- Invitation management
+  - View outstanding invitations (pending, not expired)
+  - Send invitation (email + role)
+  - Resend invitation
+  - Revoke/cancel invitation
+  - Accept invitation screen/flow (token-based deep link)
 - Unit tests for:
   - React Native components
   - Form validation
