@@ -54,6 +54,7 @@ def register(
       email=user_in.email,
       hashed_password=hashed_password,
       full_name=user_in.full_name,
+      phone_number=user_in.phone_number,
   )
   db.add(db_user)
   db.commit()

@@ -57,3 +57,5 @@ coverage.*
 # Logs
 *.log
 
+# Docs
+docs/DesignChoices.md

@@ -556,6 +556,136 @@ class TestLeaveHousehold:
     assert response.status_code == 404
 
 
+class TestRemoveHouseholdMember:
+  """Test remove (kick) household member endpoint."""
+
+  def test_remove_member_success(
+      self,
+      client,
+      test_db,
+      test_user,
+      test_user2,
+      auth_token,
+  ):
+    """Test that owners can remove another member."""
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    owner = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    member = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user2.id,
+        role="member",
+    )
+    test_db.add_all([owner, member])
+    test_db.commit()
+
+    response = client.delete(
+        f"/api/v1/households/{household.id}/members/{test_user2.id}",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert response.status_code == 204
+
+    membership_check = (
+        test_db.query(HouseholdMember).filter(
+            HouseholdMember.household_id == household.id,
+            HouseholdMember.user_id == test_user2.id,
+        ).first())
+    assert membership_check is None
+
+  def test_remove_member_requires_owner(
+      self,
+      client,
+      test_db,
+      test_user,
+      test_user2,
+      auth_token2,
+  ):
+    """Test that only owners can remove members."""
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    owner = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    member = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user2.id,
+        role="member",
+    )
+    test_db.add_all([owner, member])
+    test_db.commit()
+
+    response = client.delete(
+        f"/api/v1/households/{household.id}/members/{test_user.id}",
+        headers={"Authorization": f"Bearer {auth_token2}"},
+    )
+    assert response.status_code == 403
+    assert "owner" in response.json()["detail"].lower()
+
+  def test_remove_member_non_member_404(
+      self,
+      client,
+      test_db,
+      test_user,
+      test_user2,
+      auth_token2,
+  ):
+    """Test that non-members get 404 when trying to remove members."""
+    household = Household(name="User 1 Household")
+    test_db.add(household)
+    test_db.flush()
+
+    owner = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    test_db.add(owner)
+    test_db.commit()
+
+    response = client.delete(
+        f"/api/v1/households/{household.id}/members/{test_user.id}",
+        headers={"Authorization": f"Bearer {auth_token2}"},
+    )
+    assert response.status_code == 404
+
+  def test_remove_member_last_owner_blocked(
+      self,
+      client,
+      test_db,
+      test_user,
+      auth_token,
+  ):
+    """Test that the last owner cannot be removed."""
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    owner = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    test_db.add(owner)
+    test_db.commit()
+
+    response = client.delete(
+        f"/api/v1/households/{household.id}/members/{test_user.id}",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert response.status_code == 400
+    assert "last owner" in response.json()["detail"].lower()
+
+
 class TestTransferOwnership:
   """Test transfer ownership endpoint."""
 

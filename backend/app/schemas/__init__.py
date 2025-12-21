@@ -8,6 +8,13 @@ from app.schemas.household import (
     TransferOwnership,
 )
 from app.schemas.user import User, UserCreate, UserInDB, UserLogin
+from app.schemas.invitation import (
+    InvitationAcceptRequest,
+    InvitationAcceptResponse,
+    InvitationCreate,
+    InvitationRead,
+)
+
 
 __all__ = [
     "User",
@@ -19,5 +26,8 @@ __all__ = [
     "HouseholdRead",
     "HouseholdMemberRead",
     "TransferOwnership",
+    "InvitationCreate",
+    "InvitationRead",
+    "InvitationAcceptRequest",
+    "InvitationAcceptResponse",
 ]
-
