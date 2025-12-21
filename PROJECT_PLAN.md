@@ -107,6 +107,8 @@ A multi-platform household management application supporting expense splitting, 
   - Listing user's households
   - Getting household details
   - Leaving a household
+  - Transferring ownership (assigning a new owner)
+  - Deleting a household (owners only)
 - Basic authorization middleware (verify household membership)
 - Unit tests for:
   - Household model validation

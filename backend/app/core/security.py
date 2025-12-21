@@ -1,5 +1,6 @@
 """Security utilities for authentication and password hashing."""
 
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -7,6 +8,9 @@ import bcrypt
 from jose import JWTError, jwt
 
 from app.core.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 # Bcrypt has a 72-byte limit for passwords
 # We validate this but don't reveal the specific limit in error messages
@@ -95,6 +99,10 @@ def create_access_token(
   Returns:
     Encoded JWT token string.
   """
+  logger.debug(f"create_access_token: Creating token with data: {data}")
+  logger.debug(
+      f"create_access_token: Using SECRET_KEY length: "
+      f"{len(settings.SECRET_KEY)}, algorithm: {settings.ALGORITHM}")
   to_encode = data.copy()
   if expires_delta:
     expire = datetime.now(timezone.utc) + expires_delta
@@ -107,6 +115,9 @@ def create_access_token(
       to_encode,
       settings.SECRET_KEY,
       algorithm=settings.ALGORITHM)
+  logger.debug(
+      f"create_access_token: Token created successfully, length:"
+      f" {len(encoded_jwt)}")
   return encoded_jwt
 
 
@@ -121,10 +132,25 @@ def decode_access_token(token: str) -> Optional[dict]:
     Decoded token payload if valid, None otherwise.
   """
   try:
+    logger.debug(
+        f"decode_access_token: Attempting to decode token with SECRET_KEY "
+        f"length: {len(settings.SECRET_KEY)}")
+    logger.debug(f"decode_access_token: Using algorithm: {settings.ALGORITHM}")
     payload = jwt.decode(
         token,
         settings.SECRET_KEY,
         algorithms=[settings.ALGORITHM])
+    logger.debug(
+        f"decode_access_token: Token decoded successfully, payload keys:"
+        f" {list(payload.keys())}")
     return payload
-  except JWTError:
+  except JWTError as e:
+    logger.warning(
+        f"decode_access_token: JWT decode failed with error:"
+        f" {type(e).__name__}: {str(e)}")
+    return None
+  except Exception as e:
+    logger.error(
+        f"decode_access_token: Unexpected error during decode:"
+        f" {type(e).__name__}: {str(e)}")
     return None

@@ -136,6 +136,81 @@ alembic downgrade -1
 - `POST /api/v1/auth/login` - Login and get JWT token
 - `GET /api/v1/auth/me` - Get current user information (requires authentication)
 
+### Households
+
+- `POST /api/v1/households` - Create a new household (requires authentication)
+- `GET /api/v1/households` - List all households where current user is a member (requires authentication)
+- `GET /api/v1/households/{household_id}` - Get household details (requires authentication, must be a member)
+- `POST /api/v1/households/{household_id}/leave` - Leave a household (requires authentication, must be a member)
+- `POST /api/v1/households/{household_id}/transfer-ownership` - Transfer ownership to another member (requires authentication, owners only)
+- `DELETE /api/v1/households/{household_id}` - Delete a household (requires authentication, owners only)
+
+**Note**: All household endpoints require authentication. Users can only access households they are members of. Non-members will receive a 404 error to prevent household ID enumeration.
+
+#### Example: Creating a Household
+
+```bash
+# First, login to get a token
+TOKEN=$(curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "YourPassword123!"}' \
+  | jq -r '.access_token')
+
+# Create a household
+curl -X POST "http://localhost:8000/api/v1/households" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Household",
+    "description": "A shared household for managing expenses"
+  }'
+```
+
+#### Example: Listing Households
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/households" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Example: Getting Household Details
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/households/1" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Example: Leaving a Household
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/households/1/leave" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Note**: The last owner of a household cannot leave. They must first transfer ownership or invite another owner.
+
+#### Example: Transferring Ownership
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/households/1/transfer-ownership" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "new_owner_id": 2
+  }'
+```
+
+**Note**: Only owners can transfer ownership. The new owner must already be a member of the household. Ownership is shared (both users remain owners after transfer).
+
+#### Example: Deleting a Household
+
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/households/1" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Note**: Only owners can delete a household. This will permanently delete the household and all associated memberships.
+
 ### Health Check
 
 - `GET /` - Root endpoint with API information
@@ -154,14 +229,18 @@ backend/
 │   │   └── security.py      # JWT and password hashing
 │   ├── models/
 │   │   ├── __init__.py
-│   │   └── user.py          # User database model
+│   │   ├── user.py          # User database model
+│   │   ├── household.py     # Household database model
+│   │   └── household_member.py  # Household membership model
 │   ├── schemas/
 │   │   ├── __init__.py
-│   │   └── user.py          # Pydantic schemas
+│   │   ├── user.py          # Pydantic schemas
+│   │   └── household.py     # Household Pydantic schemas
 │   └── api/
 │       ├── deps.py          # FastAPI dependencies
 │       └── v1/
-│           └── auth.py       # Authentication routes
+│           ├── auth.py       # Authentication routes
+│           └── households.py  # Household management routes
 ├── alembic/                 # Database migrations
 ├── pyproject.toml           # Project dependencies (uv/pip)
 ├── requirements.txt         # Python dependencies (legacy)

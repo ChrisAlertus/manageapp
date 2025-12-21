@@ -94,7 +94,7 @@ def login(
 
   access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
   access_token = create_access_token(
-      data={"sub": user.id},
+      data={"sub": str(user.id)},  # JWT requires sub to be a string
       expires_delta=access_token_expires)
   return {"access_token": access_token, "token_type": "bearer"}
 
