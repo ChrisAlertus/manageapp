@@ -120,8 +120,8 @@ def create_access_token(
   """
   logger.debug(f"create_access_token: Creating token with data: {data}")
   logger.debug(
-      f"create_access_token: Using SECRET_KEY length: "
-      f"{len(settings.SECRET_KEY)}, algorithm: {settings.ALGORITHM}")
+      f"create_access_token: Using JWT_SECRET_KEY length: "
+      f"{len(settings.JWT_SECRET_KEY)}, algorithm: {settings.ALGORITHM}")
   to_encode = data.copy()
   if expires_delta:
     expire = datetime.now(timezone.utc) + expires_delta
@@ -132,7 +132,7 @@ def create_access_token(
   to_encode.update({"exp": int(expire.timestamp())})
   encoded_jwt = jwt.encode(
       to_encode,
-      settings.SECRET_KEY,
+      settings.JWT_SECRET_KEY,
       algorithm=settings.ALGORITHM)
   logger.debug(
       f"create_access_token: Token created successfully, length:"
@@ -152,12 +152,12 @@ def decode_access_token(token: str) -> Optional[dict]:
   """
   try:
     logger.debug(
-        f"decode_access_token: Attempting to decode token with SECRET_KEY "
-        f"length: {len(settings.SECRET_KEY)}")
+        f"decode_access_token: Attempting to decode token with JWT_SECRET_KEY "
+        f"length: {len(settings.JWT_SECRET_KEY)}")
     logger.debug(f"decode_access_token: Using algorithm: {settings.ALGORITHM}")
     payload = jwt.decode(
         token,
-        settings.SECRET_KEY,
+        settings.JWT_SECRET_KEY,
         algorithms=[settings.ALGORITHM])
     logger.debug(
         f"decode_access_token: Token decoded successfully, payload keys:"

@@ -60,8 +60,9 @@ cp .env.example .env
 ```
 
 Edit `.env` and set:
-- `SECRET_KEY`: A secure random string for JWT token signing
+- `JWT_SECRET_KEY`: A secure random string for JWT token signing
 - `DATABASE_URL`: PostgreSQL connection string
+- `RESEND_API_KEY`: API Key for Resend email service
 
 4. **Set up the database:**
 

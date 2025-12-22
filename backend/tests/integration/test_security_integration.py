@@ -136,7 +136,7 @@ class TestSecurityWithRealDependencies:
     payload = decode_access_token(token)
     assert payload is not None
 
-  @patch("app.core.security.settings.SECRET_KEY", "test-secret-key")
+  @patch("app.core.security.settings.JWT_SECRET_KEY", "test-secret-key")
   @patch("app.core.security.settings.ALGORITHM", "HS256")
   def test_security_with_custom_settings(self):
     """Test security functions with custom settings."""

@@ -35,7 +35,7 @@ RAILWAY_ENVIRONMENT=production
 RAILWAY_PROJECT_ID=abc123
 RAILWAY_SERVICE_NAME=api
 DATABASE_URL=postgresql://railway:pass@railway.db:5432/railway
-SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-secret-key
 ```
 
 ### Secondary Platform: Render.com
@@ -59,7 +59,7 @@ RENDER=true
 RENDER_SERVICE_ID=srv-abc123
 RENDER_SERVICE_NAME=api
 DATABASE_URL=postgresql://render:pass@render.db:5432/render
-SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-secret-key
 ```
 
 ### Local Development
@@ -75,7 +75,7 @@ Default platform when no cloud platform indicators are present.
 **Example Environment Variables**:
 ```bash
 DATABASE_URL=postgresql://localhost:5432/manageapp_db
-SECRET_KEY=local-dev-secret
+JWT_SECRET_KEY=local-dev-secret
 DEBUG=true
 ```
 
@@ -235,7 +235,7 @@ pytest tests/
 ### Required for All Platforms
 
 - `DATABASE_URL`: PostgreSQL connection string
-- `SECRET_KEY`: Secret key for JWT token signing
+- `JWT_SECRET_KEY`: Secret key for JWT token signing
 
 ### Railway.app Specific
 

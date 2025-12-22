@@ -207,7 +207,7 @@ class TestJWTTokenCreation:
     assert payload["exp"] > 0
 
   def test_create_access_token_uses_settings_secret(self):
-    """Test that token uses SECRET_KEY from settings."""
+    """Test that token uses JWT_SECRET_KEY from settings."""
     data = {"sub": "1"}
     token = create_access_token(data)
     # Decode with wrong secret should fail
@@ -220,7 +220,7 @@ class TestJWTTokenCreation:
     token = create_access_token(data)
     payload = jwt.decode(
         token,
-        settings.SECRET_KEY,
+        settings.JWT_SECRET_KEY,
         algorithms=[settings.ALGORITHM])
     assert payload is not None
 

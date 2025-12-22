@@ -109,7 +109,7 @@ def auth_token(test_user):
       f"auth_token fixture: Creating token for user_id: {test_user.id} (type: {type(test_user.id)})"
   )
   logger.debug(
-      f"auth_token fixture: SECRET_KEY length: {len(settings.SECRET_KEY)}, algorithm: {settings.ALGORITHM}"
+      f"auth_token fixture: JWT_SECRET_KEY length: {len(settings.JWT_SECRET_KEY)}, algorithm: {settings.ALGORITHM}"
   )
   token = create_access_token(
       data={"sub": str(test_user.id)})  # JWT requires sub to be a string

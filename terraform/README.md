@@ -76,7 +76,7 @@ Regardless of provider, you need:
 
 4. **Environment Variables**
    - `DATABASE_URL` - PostgreSQL connection string
-   - `SECRET_KEY` - JWT secret key
+   - `JWT_SECRET_KEY` - JWT secret key
    - `EMAIL_API_KEY` - Email service API key
    - `EMAIL_FROM` - Sender email address
    - `FRONTEND_URL` - Frontend application URL
