@@ -6,11 +6,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueCons
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
-
-
-def utcnow():
-  """Return current UTC datetime with timezone awareness."""
-  return datetime.now(timezone.utc)
+from app.utils import utcnow
 
 
 class Invitation(Base):

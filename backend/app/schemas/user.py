@@ -3,9 +3,9 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from app.core.security import validate_password_strength
+from app.core.security import validate_password_strength, validate_timezone
 
 
 class UserBase(BaseModel):
@@ -20,6 +20,11 @@ class UserCreate(UserBase):
   """Schema for user registration."""
 
   password: str
+  timezone: Optional[str] = Field(
+      None,
+      max_length=50,
+      description="IANA timezone (e.g., 'America/New_York'). "
+      "If not provided, defaults to UTC.")
 
   @field_validator("password")
   @classmethod
@@ -39,6 +44,26 @@ class UserCreate(UserBase):
     if not v:
       raise ValueError("Password cannot be empty")
     validate_password_strength(v)
+    return v
+
+  @field_validator("timezone")
+  @classmethod
+  def validate_timezone(cls, v: Optional[str]) -> Optional[str]:
+    """
+    Validate timezone is a valid IANA timezone.
+
+    Args:
+      v: The timezone value to validate.
+
+    Returns:
+      The validated timezone, or None if not provided.
+
+    Raises:
+      ValueError: If timezone is invalid.
+    """
+    if v is None:
+      return None
+    validate_timezone(v)
     return v
 
 

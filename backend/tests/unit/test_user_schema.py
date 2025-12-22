@@ -186,3 +186,83 @@ class TestUserCreateSchema:
     }
     user = UserCreate(**user_data)
     assert user.full_name is None
+
+  def test_user_create_with_valid_timezone(self):
+    """Test that valid timezone is accepted."""
+    user_data = {
+        "email": "test@example.com",
+        "password": "ValidPass123!",
+        "timezone": "America/Toronto",
+    }
+    user = UserCreate(**user_data)
+    assert user.timezone == "America/Toronto"
+
+  def test_user_create_with_utc_timezone(self):
+    """Test that UTC timezone is accepted."""
+    user_data = {
+        "email": "test@example.com",
+        "password": "ValidPass123!",
+        "timezone": "UTC",
+    }
+    user = UserCreate(**user_data)
+    assert user.timezone == "UTC"
+
+  def test_user_create_without_timezone(self):
+    """Test that timezone is optional and defaults to None."""
+    user_data = {
+        "email": "test@example.com",
+        "password": "ValidPass123!",
+    }
+    user = UserCreate(**user_data)
+    assert user.timezone is None
+
+  def test_user_create_with_invalid_timezone(self):
+    """Test that invalid timezone is rejected."""
+    user_data = {
+        "email": "test@example.com",
+        "password": "ValidPass123!",
+        "timezone": "Invalid/Timezone",
+    }
+    with pytest.raises(ValidationError) as exc_info:
+      UserCreate(**user_data)
+    errors = exc_info.value.errors()
+    assert any(
+        error["loc"] == ("timezone",
+                         ) and "Invalid timezone" in str(error["msg"])
+        for error in errors)
+
+  def test_user_create_with_malformed_timezone(self):
+    """Test that malformed timezone format is rejected."""
+    user_data = {
+        "email": "test@example.com",
+        "password": "ValidPass123!",
+        "timezone": "NotAValidFormat",
+    }
+    with pytest.raises(ValidationError) as exc_info:
+      UserCreate(**user_data)
+    errors = exc_info.value.errors()
+    assert any(
+        error["loc"] == ("timezone",
+                         ) and (
+                             "Invalid timezone" in str(error["msg"])
+                             or "Invalid timezone format" in str(error["msg"]))
+        for error in errors)
+
+  def test_user_create_with_common_timezones(self):
+    """Test that common timezones are accepted."""
+    common_timezones = [
+        "America/New_York",
+        "America/Toronto",
+        "Europe/London",
+        "Europe/Paris",
+        "Asia/Tokyo",
+        "Australia/Sydney",
+    ]
+    for tz in common_timezones:
+      user_data = {
+          "email": f"test_{tz.replace('/', '_')}@example.com",
+          "password": "ValidPass123!",
+          "timezone": tz,
+      }
+      user = UserCreate(**user_data)
+      assert user.timezone == tz

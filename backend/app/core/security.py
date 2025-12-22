@@ -17,6 +17,25 @@ logger = logging.getLogger(__name__)
 MAX_PASSWORD_BYTES = 72
 
 
+def validate_timezone(timezone_str: str) -> None:
+  """
+  Validate that a timezone string is a valid IANA timezone.
+
+  Args:
+    timezone_str: Timezone string to validate (e.g., "America/New_York").
+
+  Raises:
+    ValueError: If timezone is invalid.
+  """
+  try:
+    from zoneinfo import ZoneInfo
+    ZoneInfo(timezone_str)
+  except Exception as e:
+    if isinstance(e, ValueError):
+      raise
+    raise ValueError(f"Invalid timezone: {timezone_str}")
+
+
 def validate_password_strength(password: str) -> None:
   """
   Validate password strength requirements.

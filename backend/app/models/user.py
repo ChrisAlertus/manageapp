@@ -1,11 +1,10 @@
 """User model."""
 
-from datetime import datetime
-
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
+from app.utils import utcnow
 
 
 class User(Base):
@@ -32,9 +31,16 @@ class User(Base):
   phone_number = Column(String, nullable=True, index=True)
   is_active = Column(Boolean, default=True)
   is_verified = Column(Boolean, default=False)
-  created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+  created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
   updated_at = Column(
-      DateTime,
-      default=datetime.utcnow,
-      onupdate=datetime.utcnow,
+      DateTime(timezone=True),
+      default=utcnow,
+      onupdate=utcnow,
       nullable=False)
+
+  # Relationships
+  preferences = relationship(
+      "UserPreferences",
+      back_populates="user",
+      uselist=False,
+      cascade="all, delete-orphan")

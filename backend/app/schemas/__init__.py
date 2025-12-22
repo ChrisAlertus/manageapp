@@ -14,6 +14,12 @@ from app.schemas.invitation import (
     InvitationCreate,
     InvitationRead,
 )
+from app.schemas.user_preferences import (
+    CurrencyCode,
+    UserPreferencesBase,
+    UserPreferencesRead,
+    UserPreferencesUpdate,
+)
 
 
 __all__ = [
@@ -30,4 +36,8 @@ __all__ = [
     "InvitationRead",
     "InvitationAcceptRequest",
     "InvitationAcceptResponse",
+    "CurrencyCode",
+    "UserPreferencesBase",
+    "UserPreferencesRead",
+    "UserPreferencesUpdate",
 ]

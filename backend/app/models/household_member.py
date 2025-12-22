@@ -1,7 +1,5 @@
 """Household member association model."""
 
-from datetime import datetime
-
 from sqlalchemy import (
     Column,
     DateTime,
@@ -14,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
+from app.utils import utcnow
 
 
 class HouseholdMember(Base):
@@ -30,18 +29,31 @@ class HouseholdMember(Base):
   __tablename__ = "household_members"
 
   id = Column(Integer, primary_key=True, index=True)
-  household_id = Column(Integer, ForeignKey("households.id", ondelete="CASCADE"), nullable=False, index=True)
-  user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+  household_id = Column(
+      Integer,
+      ForeignKey("households.id",
+                 ondelete="CASCADE"),
+      nullable=False,
+      index=True)
+  user_id = Column(
+      Integer,
+      ForeignKey("users.id",
+                 ondelete="CASCADE"),
+      nullable=False,
+      index=True)
   role = Column(String, nullable=False, default="member")
-  joined_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+  joined_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
   # Constraints
   __table_args__ = (
-      UniqueConstraint("household_id", "user_id", name="uq_household_member"),
-      Index("ix_household_members_household_role", "household_id", "role"),
+      UniqueConstraint("household_id",
+                       "user_id",
+                       name="uq_household_member"),
+      Index("ix_household_members_household_role",
+            "household_id",
+            "role"),
   )
 
   # Relationships
   household = relationship("Household", back_populates="members")
   user = relationship("User")
-

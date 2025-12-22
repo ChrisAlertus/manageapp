@@ -13,6 +13,7 @@ from app.core.security import (
     decode_access_token,
     get_password_hash,
     validate_password_strength,
+    validate_timezone,
     verify_password)
 
 
@@ -368,3 +369,38 @@ class TestSecurityIntegration:
     payload = decode_access_token(token)
     # Should be None due to expiration
     assert payload is None
+
+
+class TestTimezoneValidation:
+  """Test timezone validation function."""
+
+  def test_valid_timezone_utc(self):
+    """Test that UTC timezone is accepted."""
+    validate_timezone("UTC")
+
+  def test_valid_timezone_america(self):
+    """Test that America timezones are accepted."""
+    validate_timezone("America/New_York")
+    validate_timezone("America/Los_Angeles")
+    validate_timezone("America/Chicago")
+
+  def test_valid_timezone_europe(self):
+    """Test that European timezones are accepted."""
+    validate_timezone("Europe/London")
+    validate_timezone("Europe/Paris")
+    validate_timezone("Europe/Berlin")
+
+  def test_valid_timezone_asia(self):
+    """Test that Asian timezones are accepted."""
+    validate_timezone("Asia/Tokyo")
+    validate_timezone("Asia/Shanghai")
+
+  def test_invalid_timezone_format(self):
+    """Test that invalid timezone format is rejected."""
+    with pytest.raises(ValueError, match="Invalid timezone"):
+      validate_timezone("NotAValidFormat")
+
+  def test_invalid_timezone_name(self):
+    """Test that invalid timezone name is rejected."""
+    with pytest.raises(ValueError, match="Invalid timezone"):
+      validate_timezone("Invalid/Timezone")
