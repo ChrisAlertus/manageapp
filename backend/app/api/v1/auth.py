@@ -13,6 +13,7 @@ from app.core.security import (
     get_password_hash,
     verify_password)
 from app.models.user import User
+from app.models.user_preferences import UserPreferences
 from app.schemas.user import Token, User as UserSchema, UserCreate, UserLogin
 
 
@@ -57,6 +58,18 @@ def register(
       phone_number=user_in.phone_number,
   )
   db.add(db_user)
+  db.flush()  # Flush to get user.id without committing
+
+  # Create default preferences for the new user
+  # Use provided timezone or default to UTC
+  user_timezone = user_in.timezone if user_in.timezone else "UTC"
+  default_preferences = UserPreferences(
+      user_id=db_user.id,
+      preferred_currency="CAD",
+      timezone=user_timezone,
+      language="en",
+  )
+  db.add(default_preferences)
   db.commit()
   db.refresh(db_user)
   return db_user

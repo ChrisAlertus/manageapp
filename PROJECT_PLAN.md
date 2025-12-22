@@ -63,7 +63,7 @@ A multi-platform household management application supporting expense splitting, 
 
 ### Phase 1: Foundation & Authentication
 
-#### Task 1.1: Backend API Foundation
+#### Task 1.1: Backend API Foundation ✅
 **Scope**: Set up FastAPI project structure, database models, and basic authentication
 - Initialize FastAPI project with proper structure
 - Set up SQLAlchemy models and database connection
@@ -98,7 +98,7 @@ A multi-platform household management application supporting expense splitting, 
 - API documentation
 - Setup documentation
 
-#### Task 1.2: Household Management Core
+#### Task 1.2: Household Management Core ✅
 **Scope**: Implement household creation, membership, and basic operations
 - Household model (name, description, created_at, etc.)
 - User-Household relationship (many-to-many with roles: owner, member)
@@ -133,7 +133,7 @@ A multi-platform household management application supporting expense splitting, 
 - Integration test suite
 - API documentation updates
 
-#### Task 1.3: Email Invitation System
+#### Task 1.3: Email Invitation System ✅
 **Scope**: Implement email-based household invitations
 - Invitation model (token, email, household, inviter, status, expires_at)
 - Email service integration (SendGrid or AWS SES)
@@ -167,13 +167,13 @@ A multi-platform household management application supporting expense splitting, 
 - Integration test suite
 - API documentation updates
 
-#### Task 1.4: User Preferences Management
+#### Task 1.4: User Preferences Management ✅
 **Scope**: Implement user settings and preferences
 - UserPreferences model (user, preferred_currency, timezone, language, etc.)
 - API endpoints for:
   - Getting user preferences
   - Updating user preferences
-  - Setting preferred currency (USD, CAD, BBD, BRL, EUR)
+  - Setting preferred currency (CAD(default), BRL, BBD, EUR, USD)
 - Default preferences on user creation
 - Currency preference validation
 - Unit tests for:
@@ -199,6 +199,28 @@ A multi-platform household management application supporting expense splitting, 
 - Unit test suite
 - Integration test suite
 - API documentation updates
+
+#### Task 1.4.1: Timezone Selection (Future/Optional)
+**Scope**: Allow users to select a timezone other than UTC
+- **Why timezone preferences matter**:
+  - Display dates/times in user's local timezone (expense dates, chore due dates, to-do deadlines)
+  - Schedule notifications at appropriate local times
+  - Calendar views showing times in user's timezone
+  - Chore scheduling that respects user's local time
+  - Better UX for international users in different timezones
+- **Already Implemented (Task 1.4)**:
+  - ✅ Timezone field in UserPreferences model (defaults to UTC)
+  - ✅ Timezone validation (IANA timezone database) via `validate_timezone()` function
+  - ✅ API endpoint to get timezone preference: `GET /api/v1/users/me/preferences`
+  - ✅ API endpoint to update timezone preference: `PATCH /api/v1/users/me/preferences` (accepts `timezone` field)
+  - ✅ Timezone detection during registration (optional `timezone` field in `UserCreate` schema)
+  - ✅ Timezone validation in `UserPreferencesUpdate` schema
+- **Still To Do (when implementing timezone-aware features)**:
+  - Timezone selector UI (dropdown with common timezones or timezone search) - Frontend Task 5.6/6.6
+  - Backend utility functions to convert UTC timestamps to user's preferred timezone for display
+  - Apply timezone conversion in API responses when returning datetime fields (expenses, chores, todos, etc.)
+  - Timezone-aware scheduling logic for chores and notifications
+- **Note**: The API infrastructure for timezone preferences is complete. The remaining work is UI implementation and applying timezone conversions when displaying data to users.
 
 ### Phase 2: Expense Splitting Feature
 
@@ -618,6 +640,7 @@ A multi-platform household management application supporting expense splitting, 
 - Set up routing (React Router)
 - Configure API client (Axios or Fetch wrapper)
 - Set up authentication flow (login, token storage)
+  - **Timezone detection**: Detect user's timezone during registration using `Intl.DateTimeFormat().resolvedOptions().timeZone` and include it in registration request (backend already supports this)
 - Basic layout and navigation structure
 - Unit tests for:
   - API client configuration
@@ -789,9 +812,14 @@ A multi-platform household management application supporting expense splitting, 
 #### Task 5.6: User Settings/Preferences UI
 **Scope**: Web interface for user preferences
 - Settings page/dashboard
-- Currency preference selector (USD, CAD, BBD, BRL, EUR)
+- Currency preferences page/section:
+  - Currency preference selector dropdown with all supported currencies (CAD (default), USD, EUR, BBD, BRL)
+  - Display current preferred currency
+  - Save/update currency preference via API
+  - Visual feedback on successful update
 - Display currency conversion settings
 - Other user preferences (timezone, notifications, etc.)
+  - **Timezone detection note**: When implementing timezone-aware features (Task 1.4.1), detect user's timezone using `Intl.DateTimeFormat().resolvedOptions().timeZone` and allow users to override it via timezone selector
 - Unit tests for:
   - Settings form validation
   - Preference update logic
@@ -821,6 +849,7 @@ A multi-platform household management application supporting expense splitting, 
 - Set up navigation (React Navigation)
 - Configure API client
 - Set up authentication flow
+  - **Timezone detection**: Detect user's timezone during registration using `Intl.DateTimeFormat().resolvedOptions().timeZone` (works on both iOS and Android) and include it in registration request (backend already supports this)
 - Basic app structure and theming
 - Unit tests for:
   - API client configuration
@@ -977,9 +1006,14 @@ A multi-platform household management application supporting expense splitting, 
 #### Task 6.6: Mobile - User Settings/Preferences
 **Scope**: Mobile UI for user preferences
 - Settings screen
-- Currency preference selector (USD, CAD, BBD, BRL, EUR)
+- Currency preferences section:
+  - Currency preference selector (picker/dropdown) with all supported currencies (CAD (default), USD, EUR, BBD, BRL)
+  - Display current preferred currency
+  - Save/update currency preference via API
+  - Visual feedback on successful update
 - Display currency conversion settings
 - Other user preferences
+  - **Timezone detection note**: When implementing timezone-aware features (Task 1.4.1), detect user's timezone using `Intl.DateTimeFormat().resolvedOptions().timeZone` and allow users to override it via timezone selector
 - Unit tests for:
   - Settings form validation
   - Preference update logic

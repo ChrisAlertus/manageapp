@@ -1,11 +1,10 @@
 """Household model."""
 
-from datetime import datetime
-
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
+from app.utils import utcnow
 
 
 class Household(Base):
@@ -31,11 +30,11 @@ class Household(Base):
                  ondelete="SET NULL"),
       nullable=True,
       index=True)
-  created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+  created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
   updated_at = Column(
-      DateTime,
-      default=datetime.utcnow,
-      onupdate=datetime.utcnow,
+      DateTime(timezone=True),
+      default=utcnow,
+      onupdate=utcnow,
       nullable=False)
 
   # Relationships
