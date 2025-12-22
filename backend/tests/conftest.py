@@ -16,7 +16,7 @@ def pytest_configure(config):
   # Set required environment variables for tests
   # Always set these to ensure tests can run without .env file
   test_env = {
-      "SECRET_KEY": "test-secret-key-for-pytest-12345",
+      "JWT_SECRET_KEY": "test-secret-key-for-pytest-12345",
       "DATABASE_URL": "postgresql://test:test@localhost:5432/test_db",
   }
   for key, value in test_env.items():
@@ -31,7 +31,7 @@ def local_environment():
   """Fixture for local development environment."""
   env = {
       "DATABASE_URL": "postgresql://localhost:5432/test_db",
-      "SECRET_KEY": "test-secret-key",
+      "JWT_SECRET_KEY": "test-secret-key",
       "DEBUG": "true",
   }
   with patch.dict(os.environ, env, clear=True):
@@ -46,7 +46,7 @@ def railway_environment():
       "RAILWAY_PROJECT_ID": "test-project",
       "RAILWAY_SERVICE_NAME": "api",
       "DATABASE_URL": "postgresql://railway:pass@railway.db:5432/railway",
-      "SECRET_KEY": "railway-secret",
+      "JWT_SECRET_KEY": "railway-secret",
   }
   with patch.dict(os.environ, env, clear=True):
     yield env
@@ -60,7 +60,7 @@ def render_environment():
       "RENDER_SERVICE_ID": "srv-test",
       "RENDER_SERVICE_NAME": "api",
       "DATABASE_URL": "postgresql://render:pass@render.db:5432/render",
-      "SECRET_KEY": "render-secret",
+      "JWT_SECRET_KEY": "render-secret",
   }
   with patch.dict(os.environ, env, clear=True):
     yield env

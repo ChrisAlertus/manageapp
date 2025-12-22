@@ -642,6 +642,8 @@ A multi-platform household management application supporting expense splitting, 
 - Set up authentication flow (login, token storage)
   - **Timezone detection**: Detect user's timezone during registration using `Intl.DateTimeFormat().resolvedOptions().timeZone` and include it in registration request (backend already supports this)
 - Basic layout and navigation structure
+  - registration page
+  - logged in user page with placeholders for navigating to create / view households
 - Unit tests for:
   - API client configuration
   - Authentication utilities
@@ -1239,6 +1241,41 @@ A multi-platform household management application supporting expense splitting, 
 7. **Exchange Rate API**: Secure API key storage, rate limiting to prevent abuse
 8. **Currency Validation**: Validate currency codes to prevent injection attacks
 9. **Exchange Rate Caching**: Cache rates to reduce API calls and improve security
+
+### Phase 8: Nice to Have's
+
+#### Task 8.1: Enhanced PII Encryption at Rest (Future/Optional)
+**Scope**: Implement application-level encryption for sensitive PII data
+- **Database-level encryption**: Leverage PostgreSQL Transparent Data Encryption (TDE) or cloud provider encryption for database at rest
+- **Application-level encryption for PII**:
+  - Encrypt phone numbers using deterministic encryption (allows searchable queries while protecting data)
+  - Encrypt full names using AES-GCM encryption (decrypt on read, not searchable)
+  - Keep email addresses plaintext (required for authentication, lookups, and unique constraints)
+- **Key Management Service (KMS) integration**:
+  - Research and select KMS provider (AWS KMS, HashiCorp Vault, Google Cloud KMS, or Azure Key Vault)
+  - Implement key rotation strategy
+  - Secure key storage and access control
+  - Environment-based key management (development vs production)
+- **Implementation considerations**:
+  - Performance impact assessment (encryption/decryption overhead)
+  - Searchability trade-offs (deterministic vs non-deterministic encryption)
+  - Migration strategy for existing plaintext data
+  - Backup and recovery procedures for encrypted data
+- **Documentation**:
+  - Encryption architecture documentation
+  - KMS provider selection and setup guide
+  - Key rotation procedures
+  - Data migration guide for existing users
+
+**Deliverables**:
+- Database encryption configuration
+- Application-level encryption utilities for phone numbers and names
+- KMS integration and key management
+- Encryption/decryption service layer
+- Migration scripts for existing data
+- Documentation and security guidelines
+
+**Note**: This is a future enhancement for enhanced security. For MVP, database-level encryption provided by cloud providers (Railway, Render, AWS, etc.) is sufficient. Application-level encryption adds complexity and should be considered when handling highly sensitive data or meeting specific compliance requirements.
 
 ## Free Tier Cloud Options
 

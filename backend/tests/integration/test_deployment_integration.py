@@ -23,7 +23,7 @@ class TestRailwayIntegration:
         "RAILWAY_PROJECT_ID": "abc123",
         "RAILWAY_SERVICE_NAME": "api",
         "DATABASE_URL": "postgresql://railway:pass@railway.db:5432/railway",
-        "SECRET_KEY": "railway-secret-key",
+        "JWT_SECRET_KEY": "railway-secret-key",
     }
 
     with patch.dict(os.environ, railway_env, clear=True):
@@ -66,7 +66,7 @@ class TestRenderIntegration:
         "RENDER_SERVICE_TYPE": "web",
         "RENDER_REGION": "oregon",
         "DATABASE_URL": "postgresql://render:pass@render.db:5432/render",
-        "SECRET_KEY": "render-secret-key",
+        "JWT_SECRET_KEY": "render-secret-key",
     }
 
     with patch.dict(os.environ, render_env, clear=True):
@@ -102,7 +102,7 @@ class TestLocalDevelopmentIntegration:
     """Test local development environment configuration."""
     local_env = {
         "DATABASE_URL": "postgresql://localhost:5432/manageapp_db",
-        "SECRET_KEY": "local-dev-secret",
+        "JWT_SECRET_KEY": "local-dev-secret",
         "DEBUG": "true",
     }
 
@@ -137,7 +137,7 @@ class TestPlatformMigration:
     railway_config = {
         "RAILWAY_ENVIRONMENT": "production",
         "DATABASE_URL": "postgresql://railway:pass@railway.db:5432/railway",
-        "SECRET_KEY": "secret-key",
+        "JWT_SECRET_KEY": "secret-key",
     }
 
     with patch.dict(os.environ, railway_config, clear=True):
@@ -148,7 +148,7 @@ class TestPlatformMigration:
     render_config = {
         "RENDER": "true",
         "DATABASE_URL": "postgresql://render:pass@render.db:5432/render",
-        "SECRET_KEY": "secret-key",
+        "JWT_SECRET_KEY": "secret-key",
     }
 
     with patch.dict(os.environ, render_config, clear=True):
