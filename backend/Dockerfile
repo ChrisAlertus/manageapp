@@ -16,18 +16,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml ./
 
 # Install Python dependencies using uv (reads from pyproject.toml)
-RUN uv pip install --system --no-cache \
-    fastapi==0.104.1 \
-    "uvicorn[standard]==0.24.0" \
-    sqlalchemy==2.0.23 \
-    alembic==1.12.1 \
-    psycopg2-binary==2.9.9 \
-    pydantic==2.5.0 \
-    pydantic-settings==2.1.0 \
-    "python-jose[cryptography]==3.3.0" \
-    bcrypt==5.0.0 \
-    python-multipart==0.0.6 \
-    email-validator==2.1.0
+# Install Python dependencies using uv, letting uv resolve from pyproject.toml and requirements.txt if available
+COPY requirements.txt ./
+RUN uv pip install --system --no-cache -r requirements.txt
 
 # Copy application code
 COPY . .

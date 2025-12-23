@@ -1277,6 +1277,26 @@ A multi-platform household management application supporting expense splitting, 
 
 **Note**: This is a future enhancement for enhanced security. For MVP, database-level encryption provided by cloud providers (Railway, Render, AWS, etc.) is sufficient. Application-level encryption adds complexity and should be considered when handling highly sensitive data or meeting specific compliance requirements.
 
+#### Task 8.2: Recurring Expenses with Predetermined Splits
+**Scope**: Implement the ability to set up recurring expenses (bills) with a saved split ratio between household members.
+- **Data Models**:
+  - `RecurringExpense` model (amount_estimate, description, frequency, household, category, currency, status)
+  - `RecurringSplit` model (recurring_expense, user, percentage_owed)
+- **Recurrence Logic**:
+  - Support for monthly, quarterly, yearly, or custom billing cycles
+  - Integration with background job system to generate individual `Expense` records on the billing date
+- **Split Configuration**:
+  - Allow users to "save" a specific split for a recurring bill (e.g., insurance, taxes, utilities)
+  - Auto-generate individual expenses with this pre-set split when the billing period triggers
+  - Support manual adjustment of the final amount before the expense is finalized if it varies by period
+- **Notifications**:
+  - Notify household members when a new recurring expense has been generated
+- **Unit/Integration Tests**:
+  - Validate recurrence scheduling logic
+  - Ensure correct split application when generating expenses
+- **Documentation**:
+  - Update API docs and user guide for recurring expenses
+
 ## Free Tier Cloud Options
 
 ### Railway.app (Primary Platform)

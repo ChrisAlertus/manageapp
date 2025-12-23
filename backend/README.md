@@ -69,7 +69,7 @@ Edit `.env` and set:
 If using Docker Compose:
 
 ```bash
-docker-compose up -d db
+docker compose up -d db
 ```
 
 Or use your own PostgreSQL instance and update `DATABASE_URL` in `.env`.
@@ -96,7 +96,7 @@ The API will be available at:
 1. **Build and start services:**
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 This will start:
@@ -106,7 +106,7 @@ This will start:
 2. **Run migrations in the container:**
 
 ```bash
-docker-compose exec backend alembic upgrade head
+docker compose exec backend alembic upgrade head
 ```
 
 ## Database Migrations
