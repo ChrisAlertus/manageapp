@@ -23,9 +23,8 @@ RUN uv pip install --system --no-cache -r requirements.txt
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 8000
+# Expose port (Railway will set PORT env var)
+EXPOSE $PORT
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
+# Run the application - use PORT env var with fallback to 8000
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
