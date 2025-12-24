@@ -164,7 +164,7 @@ This is a personal project, but the structure allows for:
 
 ## License
 
-[To be determined]
+ GPL-3.0 license
 
 ## Next Steps
 
