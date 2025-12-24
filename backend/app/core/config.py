@@ -22,13 +22,15 @@ class Settings(BaseSettings):
   # Database
   DATABASE_URL: str
 
-  # CORS
-  BACKEND_CORS_ORIGINS: List[str] = [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:8080",
-  ]
+  # CORS - Allow override via environment variable
+  BACKEND_CORS_ORIGINS: str = (
+      "http://localhost:3000,http://localhost:5173,"
+      "http://localhost:5174,http://localhost:8080")
+
+  @property
+  def cors_origins_list(self) -> List[str]:
+    """Parse CORS origins from comma-separated string."""
+    return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(',')]
 
   # Invitations / Email
   INVITATION_EXPIRE_HOURS: int = 168  # 7 days
