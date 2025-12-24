@@ -58,13 +58,20 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     // If we get a 401 error, it means our token is invalid or expired
     if (error.response?.status === 401) {
-      // Clear the stored token
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
+      const requestUrl = error.config?.url || '';
 
-      // Redirect to login page (if we're not already there)
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Don't redirect on login/register failures - let the component handle the error
+      const isAuthRequest = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+
+      if (!isAuthRequest) {
+        // Only clear token and redirect for authenticated requests (not login attempts)
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+
+        // Redirect to login page (if we're not already there)
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
 

@@ -30,3 +30,10 @@ npx serve -s dist -l $PORT
 ```
 
 To get a publicly accessible domain, check under the frontend "Networking" and click "Public Domain" (I think). It will generate a url which you can use to access the running app from your browser. It lives!
+
+Quick pause checklist
+[ ] Pause frontend service
+[ ] Pause backend service
+[ ] Export PostgreSQL data (optional)
+[ ] Pause or delete PostgreSQL service
+[ ] Verify no active deployments
