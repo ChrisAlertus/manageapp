@@ -17,6 +17,7 @@ import {
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { getErrorMessage } from '../utils/errorHandling';
 
 /**
  * LoginPage - User login form
@@ -48,39 +49,11 @@ export const LoginPage: React.FC = () => {
         setError('Login failed. Please check your credentials.');
       }
     } catch (err) {
-      // Use a type guard to check if the error is an AxiosError
-      type AxiosErrorLike = {
-        response?: {
-          data?: {
-            detail?: string | Array<{
-              type?: string;
-              loc?: Array<string | number>;
-              msg?: string;
-            }>;
-          };
-        };
-        message?: string;
-      };
-      const errorObj = err as AxiosErrorLike;
-
-      // Extract error message - handle both string and array formats
-      let errorMessage = 'Login failed. Please check your credentials and try again.';
-
-      if (errorObj?.response?.data?.detail) {
-        const detail = errorObj.response.data.detail;
-
-        if (typeof detail === 'string') {
-          // Handle string errors (401, 403, etc.)
-          errorMessage = detail;
-        } else if (Array.isArray(detail) && detail.length > 0) {
-          // Handle validation errors (422) - extract first error message
-          const firstError = detail[0];
-          errorMessage = firstError.msg || 'Invalid input. Please check your email and password format.';
-        }
-      } else if (errorObj?.message) {
-        errorMessage = errorObj.message;
-      }
-
+      // Extract user-friendly error message using our reusable utility
+      const errorMessage = getErrorMessage(
+        err,
+        'Login failed. Please check your credentials and try again.'
+      );
       setError(errorMessage);
       // Log error for debugging
       console.error('Login error:', err);
