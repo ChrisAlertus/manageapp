@@ -51,17 +51,36 @@ export const LoginPage: React.FC = () => {
       // Use a type guard to check if the error is an AxiosError
       type AxiosErrorLike = {
         response?: {
-          data?: { detail?: string };
+          data?: {
+            detail?: string | Array<{
+              type?: string;
+              loc?: Array<string | number>;
+              msg?: string;
+            }>;
+          };
         };
         message?: string;
       };
-
       const errorObj = err as AxiosErrorLike;
 
-      const errorMessage =
-        errorObj?.response?.data?.detail ||
-        errorObj?.message ||
-        'Login failed. Please check your credentials and try again.';
+      // Extract error message - handle both string and array formats
+      let errorMessage = 'Login failed. Please check your credentials and try again.';
+
+      if (errorObj?.response?.data?.detail) {
+        const detail = errorObj.response.data.detail;
+
+        if (typeof detail === 'string') {
+          // Handle string errors (401, 403, etc.)
+          errorMessage = detail;
+        } else if (Array.isArray(detail) && detail.length > 0) {
+          // Handle validation errors (422) - extract first error message
+          const firstError = detail[0];
+          errorMessage = firstError.msg || 'Invalid input. Please check your email and password format.';
+        }
+      } else if (errorObj?.message) {
+        errorMessage = errorObj.message;
+      }
+
       setError(errorMessage);
       // Log error for debugging
       console.error('Login error:', err);
