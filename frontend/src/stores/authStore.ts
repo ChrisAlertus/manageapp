@@ -51,8 +51,13 @@ export const useAuthStore = create<AuthState>()(
       login: async (credentials: LoginRequest) => {
         set({ isLoading: true });
         try {
-          // Call the backend API
+          // Call the backend API - this will throw if credentials are invalid
           const tokenResponse = await apiLogin(credentials);
+
+          // Validate we got a token (defensive check)
+          if (!tokenResponse?.access_token) {
+            throw new Error('No access token received from server');
+          }
 
           // Save the token to localStorage (the apiClient will use this automatically)
           localStorage.setItem('access_token', tokenResponse.access_token);
@@ -60,15 +65,21 @@ export const useAuthStore = create<AuthState>()(
           // Get the user's information
           const user = await getCurrentUser();
 
-          // Update the store
+          // Update the store - only if everything succeeded
           set({
             user,
             isAuthenticated: true,
             isLoading: false,
           });
         } catch (error) {
-          set({ isLoading: false });
-          throw error; // Let the component handle the error
+          // Ensure we clear any partial state on error
+          set({
+            isLoading: false,
+            isAuthenticated: false,
+            user: null,
+          });
+          // Re-throw the error so the component can handle it
+          throw error;
         }
       },
 

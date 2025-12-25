@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { getUserTimezone } from '../utils/timezone';
+import { getErrorMessage } from '../utils/errorHandling';
 
 /**
  * RegisterPage - User registration form
@@ -89,9 +90,15 @@ export const RegisterPage: React.FC = () => {
 
       // If successful, user is automatically logged in, redirect to dashboard
       navigate('/');
-    } catch (err: any) {
-      // Show error message
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+    } catch (err) {
+      // Extract user-friendly error message using our reusable utility
+      const errorMessage = getErrorMessage(
+        err,
+        'Registration failed. Please try again.'
+      );
+      setError(errorMessage);
+      // Log error for debugging
+      console.error('Registration error:', err);
     }
   };
 

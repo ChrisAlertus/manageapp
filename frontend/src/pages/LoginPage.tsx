@@ -17,6 +17,7 @@ import {
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { getErrorMessage } from '../utils/errorHandling';
 
 /**
  * LoginPage - User login form
@@ -38,11 +39,24 @@ export const LoginPage: React.FC = () => {
       // Call the login function from the auth store
       await login({ email, password });
 
-      // If successful, redirect to dashboard
-      navigate('/');
-    } catch (err: any) {
-      // Show error message
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      // Verify authentication state before navigating (defensive check)
+      // If login succeeded, isAuthenticated should be true
+      const store = useAuthStore.getState();
+      if (store.isAuthenticated) {
+        navigate('/');
+      } else {
+        // This shouldn't happen if login() succeeds, but just in case
+        setError('Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      // Extract user-friendly error message using our reusable utility
+      const errorMessage = getErrorMessage(
+        err,
+        'Login failed. Please check your credentials and try again.'
+      );
+      setError(errorMessage);
+      // Log error for debugging
+      console.error('Login error:', err);
     }
   };
 
