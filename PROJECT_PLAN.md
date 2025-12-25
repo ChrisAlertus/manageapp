@@ -167,6 +167,56 @@ A multi-platform household management application supporting expense splitting, 
 - Integration test suite
 - API documentation updates
 
+#### Task 1.3.1: Email Confirmation on Registration
+**Scope**: Send confirmation email to users when they register and implement email verification
+- Add email verification fields to User model:
+  - `email_verified` (boolean, default False)
+  - `email_verification_token` (string, nullable, unique)
+  - `email_verification_token_expires_at` (datetime, nullable)
+- Email service integration for sending confirmation emails:
+  - Welcome email template with confirmation link
+  - Confirmation link includes secure token
+  - Token expiration (e.g., 24-48 hours)
+- API endpoints for:
+  - Automatically send confirmation email on user registration
+  - Verifying email address (via token)
+  - Resending confirmation email
+  - Checking email verification status
+- Email templates:
+  - Welcome email with confirmation link
+  - Confirmation success email
+- Token generation and validation:
+  - Secure, unique tokens for each user
+  - Token expiration handling
+  - One-time use tokens (invalidate after verification)
+- Unit tests for:
+  - Email verification token generation and validation
+  - Email service integration (mocked)
+  - Token expiration logic
+  - Email verification status updates
+  - Resend confirmation logic
+- Integration tests for:
+  - End-to-end registration and confirmation flow
+  - Token expiration handling
+  - Email service error handling
+  - Resend confirmation workflow
+  - Duplicate verification prevention
+- Documentation:
+  - API endpoint documentation (OpenAPI/Swagger)
+  - Email confirmation workflow guide
+  - Update README with email verification process
+  - Code documentation for email verification models and services
+
+**Deliverables**:
+- Email verification fields in User model
+- Automatic confirmation email on registration
+- Email verification endpoint with token validation
+- Welcome and confirmation email templates
+- Resend confirmation functionality
+- Unit test suite
+- Integration test suite
+- API documentation updates
+
 #### Task 1.4: User Preferences Management ✅
 **Scope**: Implement user settings and preferences
 - UserPreferences model (user, preferred_currency, timezone, language, etc.)
