@@ -20,6 +20,20 @@ from app.schemas.user_preferences import (
     UserPreferencesRead,
     UserPreferencesUpdate,
 )
+from app.schemas.todo import (
+    Priority,
+    TodoBase,
+    TodoClaimCreate,
+    TodoClaimRead,
+    TodoCompletionRead,
+    TodoCreate,
+    TodoRead,
+    TodoShareCreate,
+    TodoShareRead,
+    TodoUpdate,
+    TodoVisibilityUpdate,
+    Visibility,
+)
 
 
 __all__ = [
@@ -40,4 +54,16 @@ __all__ = [
     "UserPreferencesBase",
     "UserPreferencesRead",
     "UserPreferencesUpdate",
+    "Priority",
+    "Visibility",
+    "TodoBase",
+    "TodoCreate",
+    "TodoUpdate",
+    "TodoRead",
+    "TodoClaimCreate",
+    "TodoClaimRead",
+    "TodoShareCreate",
+    "TodoShareRead",
+    "TodoCompletionRead",
+    "TodoVisibilityUpdate",
 ]
