@@ -2,19 +2,52 @@
  * Dashboard Page
  *
  * Main landing page for authenticated users.
- * This is a placeholder that will be expanded with household management features.
+ * Displays household list and placeholder for todos (Task 5.5).
  */
 
-import { Box, Button, Card, CardContent, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Link,
+  Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { listHouseholds, type Household } from '../api/households';
 import { useAuthStore } from '../stores/authStore';
+import { getErrorMessage } from '../utils/errorHandling';
 
 /**
  * DashboardPage - Main dashboard for logged-in users
  *
- * Currently shows a welcome message and placeholders for future features.
+ * Shows household list and placeholder for todos (Task 5.5).
  */
 export const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [households, setHouseholds] = useState<Household[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadHouseholds();
+  }, []);
+
+  const loadHouseholds = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await listHouseholds();
+      setHouseholds(data);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to load households'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box>
@@ -23,90 +56,144 @@ export const DashboardPage: React.FC = () => {
       </Typography>
 
       <Typography variant="body1" color="text.secondary" paragraph>
-        This is your household management dashboard. Here you'll be able to manage
+        This is your household management dashboard. Here you can manage
         households, expenses, chores, and to-do lists.
       </Typography>
 
-      <Box sx={{ mt: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <Card sx={{ minWidth: 275 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2" gutterBottom>
-              Households
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Manage your households and members.
+      {/* Households Section */}
+      <Card sx={{ mt: 4, mb: 4 }}>
+        <CardContent>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Your Households
             </Typography>
             <Button
               variant="contained"
-              onClick={() => {
-                // TODO: Navigate to households page when implemented
-                alert('Household management coming soon!');
-              }}
+              onClick={() => navigate('/households')}
             >
-              View Households
+              View All Households
             </Button>
-          </CardContent>
-        </Card>
+          </Box>
 
-        <Card sx={{ minWidth: 275 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2" gutterBottom>
-              Expenses
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <CircularProgress size={24} />
+            </Box>
+          ) : error ? (
+            <Typography color="error" paragraph>
+              {error}
             </Typography>
+          ) : households.length === 0 ? (
             <Typography variant="body2" color="text.secondary" paragraph>
-              Track and split expenses with your household.
+              You don't have any households yet. Create one to get started!
             </Typography>
-            <Button
-              variant="contained"
-              onClick={() => {
-                // TODO: Navigate to expenses page when implemented
-                alert('Expense tracking coming soon!');
-              }}
-            >
-              View Expenses
-            </Button>
-          </CardContent>
-        </Card>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {households.slice(0, 5).map((household) => (
+                <Box
+                  key={household.id}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    py: 1,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Box>
+                    <Typography variant="body1">{household.name}</Typography>
+                    {household.description && (
+                      <Typography variant="body2" color="text.secondary">
+                        {household.description}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Button
+                    size="small"
+                    onClick={() => navigate(`/households/${household.id}`)}
+                  >
+                    View
+                  </Button>
+                </Box>
+              ))}
+              {households.length > 5 && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  And {households.length - 5} more household
+                  {households.length - 5 > 1 ? 's' : ''}...
+                </Typography>
+              )}
+            </Box>
+          )}
+        </CardContent>
+      </Card>
 
-        <Card sx={{ minWidth: 275 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2" gutterBottom>
-              Chores
+      {/* Todos Section - Placeholder for Task 5.5 */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Recent To-Dos
             </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Schedule and track household chores.
-            </Typography>
-            <Button
-              variant="contained"
+            <Link
+              component="button"
+              variant="body2"
               onClick={() => {
-                // TODO: Navigate to chores page when implemented
-                alert('Chore management coming soon!');
+                // TODO: Navigate to todos page when Task 5.5 is implemented
+                alert('To-do list coming soon!');
               }}
+              sx={{ cursor: 'pointer' }}
             >
-              View Chores
-            </Button>
-          </CardContent>
-        </Card>
+              View All Todos
+            </Link>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            To-do list feature coming soon. This will show your first 5
+            user-created or assigned todos.
+          </Typography>
+        </CardContent>
+      </Card>
 
-        <Card sx={{ minWidth: 275 }}>
-          <CardContent>
-            <Typography variant="h6" component="h2" gutterBottom>
-              To-Do Lists
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Create and manage shared to-do lists.
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={() => {
-                // TODO: Navigate to todos page when implemented
-                alert('To-do lists coming soon!');
-              }}
-            >
-              View To-Dos
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Quick Actions */}
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Button
+          variant="outlined"
+          onClick={() => navigate('/households/new')}
+        >
+          Create Household
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            // TODO: Navigate to expenses page when implemented
+            alert('Expense tracking coming soon!');
+          }}
+        >
+          View Expenses
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            // TODO: Navigate to chores page when implemented
+            alert('Chore management coming soon!');
+          }}
+        >
+          View Chores
+        </Button>
       </Box>
     </Box>
   );

@@ -12,6 +12,10 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { HouseholdListPage } from './pages/HouseholdListPage';
+import { CreateHouseholdPage } from './pages/CreateHouseholdPage';
+import { HouseholdDetailsPage } from './pages/HouseholdDetailsPage';
+import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
 import { useAuthStore } from './stores/authStore';
 
 /**
@@ -56,6 +60,46 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <DashboardPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/households"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <HouseholdListPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/households/new"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <CreateHouseholdPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/households/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <HouseholdDetailsPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invitations/accept"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AcceptInvitationPage />
               </MainLayout>
             </ProtectedRoute>
           }
