@@ -106,6 +106,7 @@ A multi-platform household management application supporting expense splitting, 
   - Creating a household
   - Listing user's households
   - Getting household details
+  - Getting household members list with user details
   - Leaving a household
   - Removing/kicking a member from a household (owners only)
   - Transferring ownership (assigning a new owner)
@@ -601,7 +602,7 @@ A multi-platform household management application supporting expense splitting, 
 - Integration test suite
 - Database schema documentation
 
-#### Task 4.2: To-Do List API
+#### Task 4.2: To-Do List API✅
 **Scope**: Implement to-do list operations with visibility and assignment via claims
 - API endpoints for:
   - Creating/editing/deleting todos
@@ -659,7 +660,7 @@ A multi-platform household management application supporting expense splitting, 
 
 ### Phase 5: Frontend - Web Application
 
-#### Task 5.1: Web App Foundation
+#### Task 5.1: Web App Foundation✅
 **Scope**: Set up React web application
 - Initialize React project (Vite or Create React App)
 - Set up routing (React Router)

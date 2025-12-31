@@ -2,7 +2,7 @@
 
 from typing import List
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.household import Household
 from app.models.household_member import HouseholdMember
@@ -215,3 +215,33 @@ class HouseholdService:
     # Delete household (cascade will handle memberships)
     db.delete(household)
     db.commit()
+
+  @staticmethod
+  def get_household_members_with_users(
+      db: Session,
+      household_id: int,
+  ) -> List[HouseholdMember]:
+    """Get all household members with their user information loaded.
+
+    Args:
+      db: Database session.
+      household_id: The household ID.
+
+    Returns:
+      List of HouseholdMember objects with user relationships loaded.
+
+    Raises:
+      ValueError: If household doesn't exist.
+    """
+    # Verify household exists
+    household = db.query(Household).filter(Household.id == household_id).first()
+    if household is None:
+      raise ValueError("Household not found")
+
+    # Query members with user relationship eagerly loaded
+    members = (
+        db.query(HouseholdMember).filter(
+            HouseholdMember.household_id == household_id).options(
+                joinedload(HouseholdMember.user)).all())
+
+    return members

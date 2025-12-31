@@ -405,6 +405,266 @@ class TestGetHousehold:
     assert response.status_code == 404
 
 
+class TestListHouseholdMembers:
+  """Test household members list endpoint."""
+
+  def test_list_household_members_success(
+      self,
+      client,
+      test_db,
+      test_user,
+      test_user2,
+      auth_token,
+  ):
+    """Test successful retrieval of household members with user details."""
+    # Create household
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    # Add memberships
+    membership1 = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    membership2 = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user2.id,
+        role="member",
+    )
+    test_db.add_all([membership1, membership2])
+    test_db.commit()
+
+    response = client.get(
+        f"/api/v1/households/{household.id}/members",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+
+    # Verify member details
+    member_dict = {m["user_id"]: m for m in data}
+    assert test_user.id in member_dict
+    assert test_user2.id in member_dict
+
+    # Verify user1 details
+    user1_member = member_dict[test_user.id]
+    assert user1_member["email"] == test_user.email
+    assert user1_member["full_name"] == test_user.full_name
+    assert user1_member["role"] == "owner"
+    assert "joined_at" in user1_member
+
+    # Verify user2 details
+    user2_member = member_dict[test_user2.id]
+    assert user2_member["email"] == test_user2.email
+    assert user2_member["full_name"] == test_user2.full_name
+    assert user2_member["role"] == "member"
+    assert "joined_at" in user2_member
+
+  def test_list_household_members_empty(
+      self,
+      client,
+      test_db,
+      test_user,
+      auth_token,
+  ):
+    """Test listing members when household has only the requester."""
+    # Create household with only one member
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    membership = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    test_db.add(membership)
+    test_db.commit()
+
+    response = client.get(
+        f"/api/v1/households/{household.id}/members",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["user_id"] == test_user.id
+    assert data[0]["email"] == test_user.email
+
+  def test_list_household_members_with_null_full_name(
+      self,
+      client,
+      test_db,
+      test_user,
+      auth_token,
+  ):
+    """Test that members with null full_name are handled correctly."""
+    # Create a user without full_name
+    from app.core.security import get_password_hash
+
+    user_no_name = User(
+        email="noname@example.com",
+        hashed_password=get_password_hash("TestPass123!"),
+        full_name=None,
+    )
+    test_db.add(user_no_name)
+    test_db.flush()
+
+    # Create household
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    # Add memberships
+    membership1 = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    membership2 = HouseholdMember(
+        household_id=household.id,
+        user_id=user_no_name.id,
+        role="member",
+    )
+    test_db.add_all([membership1, membership2])
+    test_db.commit()
+
+    response = client.get(
+        f"/api/v1/households/{household.id}/members",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+
+    # Find the member without full_name
+    no_name_member = next((m for m in data if m["user_id"] == user_no_name.id),
+                          None)
+    assert no_name_member is not None
+    assert no_name_member["email"] == user_no_name.email
+    assert no_name_member["full_name"] is None
+
+  def test_list_household_members_non_member_404(
+      self,
+      client,
+      test_db,
+      test_user,
+      test_user2,
+      auth_token2,
+  ):
+    """Test that non-members get 404 when trying to list members."""
+    # Create household for user 1
+    household = Household(name="User 1 Household")
+    test_db.add(household)
+    test_db.flush()
+
+    membership = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    test_db.add(membership)
+    test_db.commit()
+
+    # User 2 should get 404
+    response = client.get(
+        f"/api/v1/households/{household.id}/members",
+        headers={"Authorization": f"Bearer {auth_token2}"},
+    )
+
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()
+
+  def test_list_household_members_nonexistent_404(
+      self,
+      client,
+      auth_token,
+  ):
+    """Test that accessing non-existent household returns 404."""
+    response = client.get(
+        "/api/v1/households/99999/members",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 404
+
+  def test_list_household_members_requires_auth(self, client, test_db):
+    """Test that listing members requires authentication."""
+    # Create household
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.commit()
+
+    response = client.get(f"/api/v1/households/{household.id}/members", )
+
+    assert response.status_code == 401
+
+  def test_list_household_members_multiple_roles(
+      self,
+      client,
+      test_db,
+      test_user,
+      test_user2,
+      auth_token,
+  ):
+    """Test listing members with multiple owners and members."""
+    # Create a third user
+    from app.core.security import get_password_hash
+
+    test_user3 = User(
+        email="test3@example.com",
+        hashed_password=get_password_hash("TestPass123!"),
+        full_name="Test User 3",
+    )
+    test_db.add(test_user3)
+    test_db.flush()
+
+    # Create household
+    household = Household(name="My Household")
+    test_db.add(household)
+    test_db.flush()
+
+    # Add memberships with different roles
+    membership1 = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user.id,
+        role="owner",
+    )
+    membership2 = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user2.id,
+        role="owner",
+    )
+    membership3 = HouseholdMember(
+        household_id=household.id,
+        user_id=test_user3.id,
+        role="member",
+    )
+    test_db.add_all([membership1, membership2, membership3])
+    test_db.commit()
+
+    response = client.get(
+        f"/api/v1/households/{household.id}/members",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 3
+
+    # Verify roles
+    member_dict = {m["user_id"]: m for m in data}
+    assert member_dict[test_user.id]["role"] == "owner"
+    assert member_dict[test_user2.id]["role"] == "owner"
+    assert member_dict[test_user3.id]["role"] == "member"
+
+
 class TestLeaveHousehold:
   """Test leave household endpoint."""
 

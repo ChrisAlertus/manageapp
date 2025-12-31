@@ -142,6 +142,7 @@ alembic downgrade -1
 - `POST /api/v1/households` - Create a new household (requires authentication)
 - `GET /api/v1/households` - List all households where current user is a member (requires authentication)
 - `GET /api/v1/households/{household_id}` - Get household details (requires authentication, must be a member)
+- `GET /api/v1/households/{household_id}/members` - Get list of household members with user details (requires authentication, must be a member)
 - `POST /api/v1/households/{household_id}/leave` - Leave a household (requires authentication, must be a member)
 - `POST /api/v1/households/{household_id}/transfer-ownership` - Transfer ownership to another member (requires authentication, owners only)
 - `DELETE /api/v1/households/{household_id}` - Delete a household (requires authentication, owners only)
@@ -179,6 +180,33 @@ curl -X GET "http://localhost:8000/api/v1/households" \
 ```bash
 curl -X GET "http://localhost:8000/api/v1/households/1" \
   -H "Authorization: Bearer $TOKEN"
+```
+
+#### Example: Getting Household Members
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/households/1/members" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+This returns a list of members with their user details:
+```json
+[
+  {
+    "user_id": 1,
+    "email": "user@example.com",
+    "full_name": "John Doe",
+    "role": "owner",
+    "joined_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "user_id": 2,
+    "email": "member@example.com",
+    "full_name": "Jane Smith",
+    "role": "member",
+    "joined_at": "2024-01-02T00:00:00Z"
+  }
+]
 ```
 
 #### Example: Leaving a Household
