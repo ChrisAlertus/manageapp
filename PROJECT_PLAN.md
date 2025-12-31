@@ -203,7 +203,7 @@ A multi-platform household management application supporting expense splitting, 
 #### Task 1.4.1: Timezone Selection (Future/Optional)
 **Scope**: Allow users to select a timezone other than UTC
 - **Why timezone preferences matter**:
-  - Display dates/times in user's local timezone (expense dates, chore due dates, to-do deadlines)
+  - Display dates/times in user's local timezone (expense dates, chore due dates, to-do due dates)
   - Schedule notifications at appropriate local times
   - Calendar views showing times in user's timezone
   - Chore scheduling that respects user's local time
@@ -568,12 +568,16 @@ A multi-platform household management application supporting expense splitting, 
 
 ### Phase 4: To-Do List Feature
 
-#### Task 4.1: To-Do Data Models
+#### Task 4.1: To-Do Data Models ✅
 **Scope**: Design database models for shared to-do lists
-- Todo model (title, description, household, created_by, priority, due_date)
+- Todo model (title, description, household, created_by, priority, due_date, visibility)
+- Assignment handled via TodoClaim - users can create claims on behalf of other users
 - TodoClaim model (todo, claimed_by, claimed_at)
 - TodoCompletion model (todo, completed_by, completed_at)
+- TodoShare model (todo, user) - for shared visibility
 - Support for categories/tags
+- Visibility support (private, household, shared)
+- Assignment handled via TodoClaim (users can create claims on behalf of other users)
 - Unit tests for:
   - Model validation and constraints
   - Priority validation
@@ -598,22 +602,39 @@ A multi-platform household management application supporting expense splitting, 
 - Database schema documentation
 
 #### Task 4.2: To-Do List API
-**Scope**: Implement to-do list operations
+**Scope**: Implement to-do list operations with visibility and assignment via claims
 - API endpoints for:
   - Creating/editing/deleting todos
-  - Listing todos (by household, by status, by assignee)
-  - Claiming a todo
+  - Listing todos (by household, by status, by claim status, by visibility)
+  - Setting todo visibility (private, household, shared)
+  - Managing shared users (add/remove users from TodoShare for shared todos)
+  - Claiming a todo (self-claim)
+  - Creating claims on behalf of other users (assignment)
+  - Removing claims (unclaim/unassign)
   - Marking todos as complete
-  - Unclaiming todos
-- Filtering and sorting options
+- Visibility and authorization logic:
+  - Helper functions to determine if user can see a todo based on visibility rules
+  - Filter todos by visibility (private: creator only, household: all members, shared: TodoShare users + creator)
+  - Enforce visibility rules in all todo endpoints
+- Filtering and sorting options:
+  - Filter by visibility, claimed_by (via TodoClaim), created_by, priority, category, due_date
+  - Sort by priority, due_date, created_at, updated_at
+  - Default sort: claimed todos (where user is the claimer) first, then user-created todos, then by priority/due_date
 - Unit tests for:
   - Todo CRUD operations logic
+  - Visibility management logic
+  - Claim creation logic (self-claim and claim on behalf of others)
+  - Shared user management (TodoShare CRUD)
   - Claim/unclaim logic
   - Completion tracking logic
   - Filtering and sorting logic
   - Status transition logic
+  - Authorization based on visibility
 - Integration tests for:
   - Todo CRUD operations end-to-end
+  - Visibility enforcement (private, household, shared)
+  - Claim workflows (self-claim and claim on behalf of others)
+  - Shared user management workflows
   - Claim/unclaim workflows
   - Completion workflows
   - Filtering and sorting operations
@@ -622,11 +643,15 @@ A multi-platform household management application supporting expense splitting, 
 - Documentation:
   - API endpoint documentation (OpenAPI/Swagger)
   - Update README with to-do list examples
+  - Visibility and claim-based assignment documentation
   - Filtering and sorting options documentation
   - Code documentation for to-do service logic
 
 **Deliverables**:
-- Complete to-do list API
+- Complete to-do list API with visibility and claim-based assignment
+- Visibility management endpoints
+- Claim management endpoints (self-claim and claim on behalf of others)
+- Shared user management endpoints
 - Claim/completion tracking
 - Unit test suite
 - Integration test suite
@@ -672,6 +697,8 @@ A multi-platform household management application supporting expense splitting, 
 #### Task 5.2: Household Management UI
 **Scope**: Web interface for household operations
 - Household list/dashboard
+  - Display first 5 user-created or assigned todos (from Task 5.5)
+  - "View All Todos" link to navigate to full todo list
 - Create household form
 - Household details page
 - Member list
@@ -783,30 +810,114 @@ A multi-platform household management application supporting expense splitting, 
 - User documentation
 
 #### Task 5.5: To-Do List UI
-**Scope**: Web interface for to-do lists
-- To-do list view
-- Create/edit todo form
-- Claim/unclaim functionality
+**Scope**: Web interface for to-do lists with visibility and assignment via claims
+- Dashboard integration:
+  - Display first 5 user-created or claimed todos (where user is the claimer) on main dashboard
+  - Show todo title, priority, due date, claim status
+  - "View All Todos" link to navigate to full todo list
+  - Prioritize claimed todos (where user is claimer) and user-created todos in dashboard display
+- To-do list view:
+  - Full list of visible todos for the user
+  - Default view: claimed todos (where user is claimer) first, then user-created, then others
+  - Visual indicators for visibility (private, household, shared icons)
+  - Visual indicators for claim status (claimed/unclaimed, who claimed it)
+- Create/edit todo form:
+  - Visibility selector (private, household, shared)
+  - Shared users selector (when visibility="shared", multi-select of household members)
+  - All existing fields (title, description, priority, due_date, category)
+  - Note: Assignment is done via claim action, not during creation
+- Claim/unclaim functionality:
+  - Self-claim: user claims todo for themselves
+  - Claim on behalf of others: user creates claim for another household member (assignment)
+  - Unclaim: remove claim (can be done by claimer or todo creator)
 - Mark complete interface
-- Filtering and sorting
+- Filtering and sorting:
+  - Filter by visibility, claimed_by (via TodoClaim), created_by, priority, category, due_date, status
+  - Sort by priority, due_date, created_at, updated_at, claim status
+  - Default sort: claimed todos (where user is claimer) first, then user-created todos, then by priority/due_date
+  - Save user's preferred sort/filter preferences
 - Unit tests for:
   - Todo form validation
-  - Claim/unclaim logic
+  - Visibility selector logic
+  - Shared users selector logic
+  - Claim/unclaim logic (self-claim and claim on behalf of others)
   - Filtering and sorting logic
+  - Dashboard display logic
   - Component rendering
 - Integration tests for:
   - Todo management workflows
+  - Visibility management workflows
+  - Claim workflows (self-claim and claim on behalf of others)
+  - Shared user management workflows
   - Claim/unclaim workflows
   - Completion workflows
   - Filtering and sorting functionality
+  - Dashboard integration
 - Documentation:
   - Component documentation
   - Update README with to-do UI usage
   - User guide for to-do lists
+  - Visibility and claim-based assignment guide
   - UI/UX design decisions
 
 **Deliverables**:
-- Complete to-do list UI
+- Complete to-do list UI with visibility and claim-based assignment
+- Dashboard integration
+- Visibility management UI
+- Claim management UI (self-claim and claim on behalf of others)
+- Shared user management UI
+- Unit test suite
+- Integration test suite
+- User documentation
+
+#### Task 5.5.1: Calendar View
+**Scope**: Calendar screen showing key dates across all tracked categories
+- Calendar component (monthly view with navigation)
+- Display todos with due dates:
+  - Show due date
+  - Visual indicator for completion status (completed/incomplete)
+  - Color coding by priority
+  - Click to view/edit todo details
+- Display upcoming chores:
+  - Show chore due dates
+  - Visual indicator for completion status
+  - Click to view/edit chore assignment
+- Display expenses:
+  - Show expense filing dates
+  - Show expenses visible to user (based on expense participants)
+  - Click to view expense details
+- Display payments:
+  - Show payment dates
+  - Only visible to payer and payee (privacy enforcement)
+  - Click to view payment details
+- Filtering options:
+  - Filter by category (todos, chores, expenses, payments)
+  - Filter by household
+  - Show/hide completed items
+- Date navigation:
+  - Month/year selector
+  - Previous/next month navigation
+  - Jump to today
+- Unit tests for:
+  - Calendar rendering logic
+  - Date filtering logic
+  - Privacy enforcement (payments)
+  - Component rendering
+- Integration tests for:
+  - Calendar data loading
+  - Date navigation
+  - Filtering functionality
+  - Click-through to detail views
+- Documentation:
+  - Component documentation
+  - Update README with calendar view usage
+  - User guide for calendar view
+  - Privacy rules documentation
+
+**Deliverables**:
+- Calendar view component
+- Integration with todos, chores, expenses, and payments
+- Privacy enforcement for payments
 - Unit test suite
 - Integration test suite
 - User documentation
@@ -981,26 +1092,120 @@ A multi-platform household management application supporting expense splitting, 
 - User documentation
 
 #### Task 6.5: Mobile - To-Do List
-**Scope**: Mobile UI for to-do lists
-- To-do list screen
-- Create/edit todo screens
-- Claim and complete functionality
+**Scope**: Mobile UI for to-do lists with visibility and assignment
+- Dashboard integration:
+  - Display first 5 user-created or claimed todos (where user is the claimer) on main dashboard screen
+  - Show todo title, priority, due date, claim status
+  - "View All Todos" button to navigate to full todo list
+  - Prioritize claimed todos (where user is claimer) and user-created todos in dashboard display
+- To-do list screen:
+  - Full list of visible todos for the user
+  - Default view: claimed todos (where user is claimer) first, then user-created, then others
+  - Visual indicators for visibility (private, household, shared icons)
+  - Visual indicators for claim status (claimed/unclaimed, who claimed it)
+  - Swipe actions for quick claim/unclaim/complete
+- Create/edit todo screens:
+  - Visibility selector (picker/dropdown: private, household, shared)
+  - Shared users selector (when visibility="shared", multi-select of household members)
+  - All existing fields (title, description, priority, due_date, category)
+  - Note: Assignment is done via claim action, not during creation
+- Claim and complete functionality:
+  - Self-claim: user claims todo for themselves
+  - Claim on behalf of others: user creates claim for another household member (assignment)
+  - Unclaim: remove claim (can be done by claimer or todo creator)
+- Filtering and sorting:
+  - Filter by visibility, claimed_by (via TodoClaim), created_by, priority, category, due_date, status
+  - Sort by priority, due_date, created_at, updated_at, claim status
+  - Default sort: claimed todos (where user is claimer) first, then user-created todos, then by priority/due_date
+  - Save user's preferred sort/filter preferences
 - Unit tests for:
   - Todo form validation
-  - Claim/unclaim logic
+  - Visibility selector logic
+  - Shared users selector logic
+  - Claim/unclaim logic (self-claim and claim on behalf of others)
+  - Filtering and sorting logic
+  - Dashboard display logic
   - Component rendering
 - Integration tests for:
   - Todo management workflows
+  - Visibility management workflows
+  - Claim workflows (self-claim and claim on behalf of others)
+  - Shared user management workflows
   - Claim/unclaim workflows
   - Completion workflows
+  - Dashboard integration
 - Documentation:
   - Component documentation
   - Update README with mobile to-do UI usage
   - User guide for to-do lists
+  - Visibility and assignment guide
   - Mobile UI/UX design decisions
 
 **Deliverables**:
-- Mobile to-do list screens
+- Mobile to-do list screens with visibility and assignment
+- Dashboard integration
+- Visibility management UI
+- Assignment management UI
+- Shared user management UI
+- Unit test suite
+- Integration test suite
+- User documentation
+
+#### Task 6.5.1: Mobile - Calendar View
+**Scope**: Mobile calendar screen showing key dates across all tracked categories
+- Calendar component (monthly view optimized for mobile)
+- Display todos with due dates:
+  - Show due date
+  - Visual indicator for completion status (completed/incomplete)
+  - Color coding by priority
+  - Tap to view/edit todo details
+- Display upcoming chores:
+  - Show chore due dates
+  - Visual indicator for completion status
+  - Tap to view/edit chore assignment
+- Display expenses:
+  - Show expense filing dates
+  - Show expenses visible to user (based on expense participants)
+  - Tap to view expense details
+- Display payments:
+  - Show payment dates
+  - Only visible to payer and payee (privacy enforcement)
+  - Tap to view payment details
+- Filtering options:
+  - Filter by category (todos, chores, expenses, payments)
+  - Filter by household
+  - Show/hide completed items
+- Date navigation:
+  - Month/year picker
+  - Swipe gestures for month navigation
+  - Jump to today button
+- Mobile optimizations:
+  - Touch-friendly date selection
+  - Compact view for small screens
+  - Pull-to-refresh for data updates
+- Unit tests for:
+  - Calendar rendering logic
+  - Date filtering logic
+  - Privacy enforcement (payments)
+  - Component rendering
+  - Touch gesture handling
+- Integration tests for:
+  - Calendar data loading
+  - Date navigation
+  - Filtering functionality
+  - Tap-through to detail views
+- Documentation:
+  - Component documentation
+  - Update README with mobile calendar view usage
+  - User guide for calendar view
+  - Privacy rules documentation
+  - Mobile UI/UX design decisions
+
+**Deliverables**:
+- Mobile calendar view component
+- Integration with todos, chores, expenses, and payments
+- Privacy enforcement for payments
+- Touch-optimized navigation
 - Unit test suite
 - Integration test suite
 - User documentation
@@ -1223,9 +1428,10 @@ A multi-platform household management application supporting expense splitting, 
 - `chore_completions` - Completion records
 
 ### To-Do Tables
-- `todos` - To-do items
+- `todos` - To-do items (includes visibility field; assignment handled via TodoClaim)
 - `todo_claims` - Who claimed which todo
 - `todo_completions` - Completion records
+- `todo_shares` - Shared visibility (links todos to users when visibility="shared")
 
 ### Invitation Tables
 - `invitations` - Household invitations
