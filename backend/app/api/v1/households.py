@@ -11,10 +11,9 @@ from app.api.deps import (
     get_household_member_or_404,
     get_household_owner_or_403,
 )
-from app.models.household import Household
-from app.models.household_member import HouseholdMember
 from app.models.user import User
 from app.schemas.household import HouseholdCreate, HouseholdRead, TransferOwnership
+from app.services.household_service import HouseholdService
 
 
 router = APIRouter()
@@ -41,27 +40,17 @@ def create_household(
   Returns:
     Created household object.
   """
-
-  # Create household
-  db_household = Household(
-      name=household_in.name,
-      description=household_in.description,
-      created_by=current_user.id,
-  )
-  db.add(db_household)
-  db.flush()  # Flush to get the household ID
-
-  # Add creator as owner
-  db_member = HouseholdMember(
-      household_id=db_household.id,
-      user_id=current_user.id,
-      role="owner",
-  )
-  db.add(db_member)
-  db.commit()
-  db.refresh(db_household)
-
-  return db_household
+  try:
+    return HouseholdService.create_household(
+        db=db,
+        household_in=household_in,
+        user_id=current_user.id,
+    )
+  except ValueError as e:
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=str(e),
+    )
 
 
 @router.get(
@@ -82,10 +71,10 @@ def list_households(
   Returns:
     List of households the user belongs to.
   """
-  households = (
-      db.query(Household).join(HouseholdMember).filter(
-          HouseholdMember.user_id == current_user.id).all())
-  return households
+  return HouseholdService.list_user_households(
+      db=db,
+      user_id=current_user.id,
+  )
 
 
 @router.get(
@@ -132,27 +121,20 @@ def leave_household(
   Raises:
     HTTPException: 400 if user is the last owner.
   """
-  household, membership = get_household_member_or_404(household_id, current_user, db)
+  # Verify user is a member
+  get_household_member_or_404(household_id, current_user, db)
 
-  # Check if user is an owner
-  if membership.role == "owner":
-    # Count total owners for this household
-    owner_count = (
-        db.query(HouseholdMember).filter(
-            HouseholdMember.household_id == household_id,
-            HouseholdMember.role == "owner",
-        ).count())
-
-    if owner_count == 1:
-      raise HTTPException(
-          status_code=status.HTTP_400_BAD_REQUEST,
-          detail="Cannot leave household: you are the last owner. "
-          "Please transfer ownership or invite another owner first.",
-      )
-
-  # Remove membership
-  db.delete(membership)
-  db.commit()
+  try:
+    HouseholdService.leave_household(
+        db=db,
+        household_id=household_id,
+        user_id=current_user.id,
+    )
+  except ValueError as e:
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=str(e),
+    )
 
   return None
 
@@ -172,35 +154,27 @@ def remove_household_member(
 
   Only owners can remove members. Removing the last remaining owner is blocked.
   """
-  _household, _ = get_household_owner_or_403(household_id, current_user, db)
+  # Verify current user is an owner
+  get_household_owner_or_403(household_id, current_user, db)
 
-  membership = (
-      db.query(HouseholdMember).filter(
-          HouseholdMember.household_id == household_id,
-          HouseholdMember.user_id == user_id,
-      ).first())
-  if membership is None:
+  try:
+    HouseholdService.remove_household_member(
+        db=db,
+        household_id=household_id,
+        user_id_to_remove=user_id,
+    )
+  except ValueError as e:
+    error_detail = str(e)
+    if "not found" in error_detail.lower():
+      raise HTTPException(
+          status_code=status.HTTP_404_NOT_FOUND,
+          detail=error_detail,
+      )
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Member not found",
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=error_detail,
     )
 
-  # Block removing the last owner
-  if membership.role == "owner":
-    owner_count = (
-        db.query(HouseholdMember).filter(
-            HouseholdMember.household_id == household_id,
-            HouseholdMember.role == "owner",
-        ).count())
-    if owner_count == 1:
-      raise HTTPException(
-          status_code=status.HTTP_400_BAD_REQUEST,
-          detail="Cannot remove member: they are the last owner. "
-          "Please transfer ownership first.",
-      )
-
-  db.delete(membership)
-  db.commit()
   return None
 
 
@@ -231,42 +205,21 @@ def transfer_ownership(
     HTTPException: 403 if user is not an owner.
     HTTPException: 400 if new owner is not a member or is already an owner.
   """
-  household, membership = get_household_owner_or_403(household_id, current_user, db)
+  # Verify current user is an owner
+  get_household_owner_or_403(household_id, current_user, db)
 
-  # Check if new owner is the current user
-  if transfer_data.new_owner_id == current_user.id:
+  try:
+    HouseholdService.transfer_ownership(
+        db=db,
+        household_id=household_id,
+        current_user_id=current_user.id,
+        transfer_data=transfer_data,
+    )
+  except ValueError as e:
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Cannot transfer ownership to yourself",
+        detail=str(e),
     )
-
-  # Check if new owner is a member of the household
-  new_owner_membership = (
-      db.query(HouseholdMember).filter(
-          HouseholdMember.household_id == household_id,
-          HouseholdMember.user_id == transfer_data.new_owner_id,
-      ).first())
-
-  if new_owner_membership is None:
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="New owner must be a member of the household",
-    )
-
-  # Check if new owner is already an owner
-  if new_owner_membership.role == "owner":
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="User is already an owner of this household",
-    )
-
-  # Transfer ownership: promote new owner, optionally demote current owner
-  new_owner_membership.role = "owner"
-  # Note: We keep the current user as owner too (shared ownership)
-  # If you want to demote the current user, uncomment the next line:
-  # membership.role = "member"
-
-  db.commit()
 
   return None
 
@@ -294,10 +247,18 @@ def delete_household(
     HTTPException: 404 if household doesn't exist or user is not a member.
     HTTPException: 403 if user is not an owner.
   """
-  household, _ = get_household_owner_or_403(household_id, current_user, db)
+  # Verify current user is an owner
+  get_household_owner_or_403(household_id, current_user, db)
 
-  # Delete household (cascade will handle memberships)
-  db.delete(household)
-  db.commit()
+  try:
+    HouseholdService.delete_household(
+        db=db,
+        household_id=household_id,
+    )
+  except ValueError as e:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=str(e),
+    )
 
   return None
