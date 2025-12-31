@@ -821,6 +821,7 @@ A multi-platform household management application supporting expense splitting, 
   - Default view: claimed todos (where user is claimer) first, then user-created, then others
   - Visual indicators for visibility (private, household, shared icons)
   - Visual indicators for claim status (claimed/unclaimed, who claimed it)
+  - **Hover tooltip for shared todos**: When hovering over a "shared" visibility todo, display a tooltip showing which other users the todo is shared with (list of user names/emails from TodoShare records)
 - Create/edit todo form:
   - Visibility selector (private, household, shared)
   - Shared users selector (when visibility="shared", multi-select of household members)
@@ -1104,6 +1105,7 @@ A multi-platform household management application supporting expense splitting, 
   - Visual indicators for visibility (private, household, shared icons)
   - Visual indicators for claim status (claimed/unclaimed, who claimed it)
   - Swipe actions for quick claim/unclaim/complete
+  - **Tap/long-press tooltip for shared todos**: When tapping or long-pressing a "shared" visibility todo, display a tooltip/popover showing which other users the todo is shared with (list of user names/emails from TodoShare records)
 - Create/edit todo screens:
   - Visibility selector (picker/dropdown: private, household, shared)
   - Shared users selector (when visibility="shared", multi-select of household members)
@@ -1502,6 +1504,40 @@ A multi-platform household management application supporting expense splitting, 
   - Ensure correct split application when generating expenses
 - **Documentation**:
   - Update API docs and user guide for recurring expenses
+
+#### Task 8.3: Todo Change History Logging (Low Priority)
+**Scope**: Log the history of changes to todos, tracking what changed, who made the change, and when.
+- **Data Model**:
+  - `TodoHistory` model (todo_id, changed_by, change_type, field_name, old_value, new_value, changed_at)
+  - Track changes to: title, description, priority, due_date, category, visibility, claim status, completion status
+- **Implementation**:
+  - Create history entries on todo create, update, claim, unclaim, complete, uncomplete
+  - Store field-level changes (what changed from what to what)
+  - Track user who made the change
+  - Timestamp all changes
+- **API Endpoints**:
+  - GET endpoint to retrieve change history for a todo
+  - Filter by change type, user, date range
+- **Use Cases**:
+  - Audit trail for todo changes
+  - Understanding who modified what and when
+  - Debugging and troubleshooting
+  - Accountability for changes
+- **Considerations**:
+  - Storage overhead (history records can accumulate)
+  - Performance impact (indexing strategy)
+  - Privacy (who can view history - creator, claimer, household members?)
+  - Optional: Retention policy (keep last N changes or all changes)
+- **Unit/Integration Tests**:
+  - Validate history creation on all todo operations
+  - Test history retrieval and filtering
+  - Test privacy/visibility rules for history
+- **Documentation**:
+  - Update API docs with history endpoints
+  - Document change tracking behavior
+  - Privacy and retention policy documentation
+
+**Note**: This is a low-priority enhancement for audit and accountability purposes. Consider implementing if users request change tracking or if compliance/audit requirements emerge.
 
 ## Free Tier Cloud Options
 
