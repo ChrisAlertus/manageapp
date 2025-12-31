@@ -42,6 +42,19 @@ class HouseholdMemberRead(BaseModel):
     from_attributes = True
 
 
+class HouseholdMemberWithUserRead(BaseModel):
+  """Schema for household member response with user details."""
+
+  user_id: int
+  email: str
+  full_name: Optional[str] = None
+  role: str
+  joined_at: datetime
+
+  class Config:
+    from_attributes = True
+
+
 class TransferOwnership(BaseModel):
   """Schema for transferring household ownership."""
 

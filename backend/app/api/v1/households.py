@@ -12,7 +12,12 @@ from app.api.deps import (
     get_household_owner_or_403,
 )
 from app.models.user import User
-from app.schemas.household import HouseholdCreate, HouseholdRead, TransferOwnership
+from app.schemas.household import (
+    HouseholdCreate,
+    HouseholdMemberWithUserRead,
+    HouseholdRead,
+    TransferOwnership,
+)
 from app.services.household_service import HouseholdService
 
 
@@ -99,6 +104,54 @@ def get_household(
   """
   household, _ = get_household_member_or_404(household_id, current_user, db)
   return household
+
+
+@router.get(
+    "/{household_id}/members",
+    response_model=List[HouseholdMemberWithUserRead],
+)
+def list_household_members(
+    household_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+  """
+  Get list of household members with user details.
+
+  Args:
+    household_id: The household ID.
+    current_user: Current authenticated user.
+    db: Database session.
+
+  Returns:
+    List of household members with user details (email, full_name, user_id, role, joined_at).
+
+  Raises:
+    HTTPException: 404 if household doesn't exist or user is not a member.
+  """
+  # Verify user is a member (for authorization)
+  get_household_member_or_404(household_id, current_user, db)
+
+  try:
+    members = HouseholdService.get_household_members_with_users(
+        db=db,
+        household_id=household_id,
+    )
+    # Convert HouseholdMember objects to schema format
+    return [
+        HouseholdMemberWithUserRead(
+            user_id=member.user_id,
+            email=member.user.email,
+            full_name=member.user.full_name,
+            role=member.role,
+            joined_at=member.joined_at,
+        ) for member in members
+    ]
+  except ValueError as e:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=str(e),
+    )
 
 
 @router.post(
