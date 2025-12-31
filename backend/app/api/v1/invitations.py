@@ -1,34 +1,16 @@
 """Invitation endpoints (send, list, accept, resend, cancel)."""
 
-from datetime import datetime, timedelta, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
-
-def ensure_timezone_aware(dt: datetime) -> datetime:
-  """Ensure datetime is timezone-aware (UTC).
-
-  Args:
-    dt: Datetime that may be naive or aware.
-
-  Returns:
-    Timezone-aware datetime in UTC.
-  """
-  if dt.tzinfo is None:
-    return dt.replace(tzinfo=timezone.utc)
-  return dt
-
 
 from app.api.deps import (
     get_current_active_user,
     get_db,
     get_household_owner_or_403,
 )
-from app.core.config import settings
-from app.models.household_member import HouseholdMember
-from app.models.invitation import Invitation
+from app.models.household import Household
 from app.models.user import User
 from app.schemas.invitation import (
     InvitationAcceptRequest,
@@ -44,12 +26,7 @@ from app.services.email import (
     get_email_client,  # Backward compatibility alias
     get_message_client,
 )
-from app.services.invitation_utils import (
-    build_invitation_accept_url,
-    generate_invitation_token,
-    hash_invitation_token,
-    normalize_email,
-)
+from app.services.invitation_service import InvitationService
 
 
 router = APIRouter()
@@ -76,81 +53,32 @@ def send_invitation(
   """
   household, _ = get_household_owner_or_403(household_id, current_user, db)
 
-  now = datetime.now(timezone.utc)
-  invitee_email = normalize_email(str(invitation_in.email))
-
-  # Prevent inviting an existing household member
-  existing_member = (
-      db.query(HouseholdMember).join(
-          User,
-          HouseholdMember.user_id == User.id).filter(
-              HouseholdMember.household_id == household_id,
-              User.email == invitee_email,
-          ).first())
-  if existing_member is not None:
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="User is already a member of this household",
-    )
-
-  # Duplicate prevention: only one active pending invitation per email+household
-  # Note: SQLAlchemy handles timezone conversion at DB level for
-  # DateTime(timezone=True)
-  existing_pending = (
-      db.query(Invitation).filter(
-          Invitation.household_id == household_id,
-          Invitation.email == invitee_email,
-          Invitation.status == "pending",
-          Invitation.expires_at > now,
-      ).first())
-  if existing_pending is not None:
-    raise HTTPException(
-        status_code=status.HTTP_409_CONFLICT,
-        detail="An active invitation is already pending for this email",
-    )
-
-  expires_hours = (
-      invitation_in.expires_in_hours if invitation_in.expires_in_hours
-      is not None else settings.INVITATION_EXPIRE_HOURS)
-  expires_at = now + timedelta(hours=expires_hours)
-
-  token = generate_invitation_token()
-  token_hash = hash_invitation_token(token)
-
-  invitation = Invitation(
-      token_hash=token_hash,
-      email=invitee_email,
-      household_id=household_id,
-      inviter_user_id=current_user.id,
-      role=invitation_in.role,
-      status="pending",
-      expires_at=expires_at,
-      last_sent_at=None,
-      resend_count=0,
-  )
-  db.add(invitation)
-  # Do not commit yet; only flush to get the invitation ID/obj for sending the email.
-  db.flush()
-  db.refresh(invitation)
-
-  accept_url = build_invitation_accept_url(token)
   try:
-    message_client.send_invitation(
-        to_email=invitee_email,
+    return InvitationService.send_invitation(
+        db=db,
+        household_id=household_id,
+        invitation_in=invitation_in,
+        inviter_user_id=current_user.id,
         inviter_email=current_user.email,
         household_name=household.name,
-        accept_url=accept_url,
+        message_client=message_client,
     )
-  except EmailSendError:
+  except ValueError as e:
+    error_detail = str(e)
+    if "already pending" in error_detail.lower():
+      raise HTTPException(
+          status_code=status.HTTP_409_CONFLICT,
+          detail=error_detail,
+      )
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=error_detail,
+    )
+  except MessageSendError as e:
     raise HTTPException(
         status_code=status.HTTP_502_BAD_GATEWAY,
-        detail="Failed to send invitation email",
+        detail=str(e),
     )
-
-  invitation.last_sent_at = now
-  db.commit()
-  db.refresh(invitation)
-  return invitation
 
 
 @router.get(
@@ -163,15 +91,11 @@ def list_pending_invitations(
     db: Session = Depends(get_db),
 ):
   """List pending (non-expired) invitations for a household (owners only)."""
-  _household, _ = get_household_owner_or_403(household_id, current_user, db)
-  now = datetime.now(timezone.utc)
-  invitations = (
-      db.query(Invitation).filter(
-          Invitation.household_id == household_id,
-          Invitation.status == "pending",
-          Invitation.expires_at > now,
-      ).order_by(Invitation.created_at.desc()).all())
-  return invitations
+  get_household_owner_or_403(household_id, current_user, db)
+  return InvitationService.list_pending_invitations(
+      db=db,
+      household_id=household_id,
+  )
 
 
 @router.post(
@@ -187,55 +111,32 @@ def resend_invitation(
 ):
   """Resend an invitation (owners only)."""
   household, _ = get_household_owner_or_403(household_id, current_user, db)
-  invitation = (
-      db.query(Invitation).filter(
-          Invitation.id == invitation_id,
-          Invitation.household_id == household_id,
-      ).first())
-  if invitation is None:
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Invitation not found",
-    )
-  if invitation.status != "pending":
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Only pending invitations can be resent",
-    )
 
-  now = datetime.now(timezone.utc)
-
-  # If expired, refresh token + expiration to create a new active invite.
-  token = None
-  expires_at = ensure_timezone_aware(invitation.expires_at)
-  if expires_at <= now:
-    token = generate_invitation_token()
-    invitation.token_hash = hash_invitation_token(token)
-    invitation.expires_at = now + timedelta(
-        hours=settings.INVITATION_EXPIRE_HOURS)
-  else:
-    token = generate_invitation_token()
-    invitation.token_hash = hash_invitation_token(token)
-
-  accept_url = build_invitation_accept_url(token)
   try:
-    message_client.send_invitation(
-        to_email=invitation.email,
+    return InvitationService.resend_invitation(
+        db=db,
+        household_id=household_id,
+        invitation_id=invitation_id,
         inviter_email=current_user.email,
         household_name=household.name,
-        accept_url=accept_url,
+        message_client=message_client,
     )
-  except EmailSendError:
+  except ValueError as e:
+    error_detail = str(e)
+    if "not found" in error_detail.lower():
+      raise HTTPException(
+          status_code=status.HTTP_404_NOT_FOUND,
+          detail=error_detail,
+      )
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=error_detail,
+    )
+  except MessageSendError as e:
     raise HTTPException(
         status_code=status.HTTP_502_BAD_GATEWAY,
-        detail="Failed to send invitation email",
+        detail=str(e),
     )
-
-  invitation.resend_count += 1
-  invitation.last_sent_at = now
-  db.commit()
-  db.refresh(invitation)
-  return invitation
 
 
 @router.post(
@@ -249,27 +150,26 @@ def cancel_invitation(
     db: Session = Depends(get_db),
 ):
   """Cancel an invitation (owners only)."""
-  _household, _ = get_household_owner_or_403(household_id, current_user, db)
-  invitation = (
-      db.query(Invitation).filter(
-          Invitation.id == invitation_id,
-          Invitation.household_id == household_id,
-      ).first())
-  if invitation is None:
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Invitation not found",
+  get_household_owner_or_403(household_id, current_user, db)
+
+  try:
+    InvitationService.cancel_invitation(
+        db=db,
+        household_id=household_id,
+        invitation_id=invitation_id,
     )
-  if invitation.status != "pending":
+  except ValueError as e:
+    error_detail = str(e)
+    if "not found" in error_detail.lower():
+      raise HTTPException(
+          status_code=status.HTTP_404_NOT_FOUND,
+          detail=error_detail,
+      )
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Only pending invitations can be cancelled",
+        detail=error_detail,
     )
 
-  now = datetime.now(timezone.utc)
-  invitation.status = "cancelled"
-  invitation.cancelled_at = now
-  db.commit()
   return None
 
 
@@ -283,60 +183,26 @@ def accept_invitation(
     db: Session = Depends(get_db),
 ):
   """Accept an invitation by token (authenticated)."""
-  now = datetime.now(timezone.utc)
-  token_hash = hash_invitation_token(accept_in.token.strip())
-  invitation = (
-      db.query(Invitation).filter(Invitation.token_hash == token_hash).first())
-  if invitation is None:
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Invitation not found",
+  try:
+    return InvitationService.accept_invitation(
+        db=db,
+        accept_in=accept_in,
+        user_id=current_user.id,
+        user_email=current_user.email,
     )
-  if invitation.status != "pending":
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Invitation is not pending",
-    )
-  # Ensure expires_at is timezone-aware for comparison
-  expires_at = ensure_timezone_aware(invitation.expires_at)
-  if expires_at <= now:
-    invitation.status = "expired"
-    db.commit()
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Invitation has expired",
-    )
-
-  if normalize_email(current_user.email) != invitation.email:
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="This invitation is for a different email address",
-    )
-
-  existing_membership = (
-      db.query(HouseholdMember).filter(
-          HouseholdMember.household_id == invitation.household_id,
-          HouseholdMember.user_id == current_user.id,
-      ).first())
-  if existing_membership is not None:
+  except ValueError as e:
+    error_detail = str(e)
+    if "not found" in error_detail.lower():
+      raise HTTPException(
+          status_code=status.HTTP_404_NOT_FOUND,
+          detail=error_detail,
+      )
+    if "different email" in error_detail.lower():
+      raise HTTPException(
+          status_code=status.HTTP_403_FORBIDDEN,
+          detail=error_detail,
+      )
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
-        detail="User is already a member of this household",
+        detail=error_detail,
     )
-
-  membership = HouseholdMember(
-      household_id=invitation.household_id,
-      user_id=current_user.id,
-      role=invitation.role,
-  )
-  db.add(membership)
-
-  invitation.status = "accepted"
-  invitation.accepted_at = now
-  invitation.accepted_by_user_id = current_user.id
-
-  db.commit()
-  return InvitationAcceptResponse(
-      household_id=invitation.household_id,
-      role=invitation.role,
-  )

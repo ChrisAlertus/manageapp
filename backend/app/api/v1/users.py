@@ -1,15 +1,15 @@
 """User preferences endpoints."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
 from app.models.user import User
-from app.models.user_preferences import UserPreferences
 from app.schemas.user_preferences import (
     UserPreferencesRead,
     UserPreferencesUpdate,
 )
+from app.services.user_preferences_service import UserPreferencesService
 
 
 router = APIRouter()
@@ -40,23 +40,10 @@ def get_user_preferences(
   Returns:
     User preferences object with currency, timezone, and language settings.
   """
-  # Get or create preferences
-  preferences = db.query(UserPreferences).filter(
-      UserPreferences.user_id == current_user.id).first()
-
-  if not preferences:
-    # Create default preferences if they don't exist
-    preferences = UserPreferences(
-        user_id=current_user.id,
-        preferred_currency="CAD",
-        timezone="UTC",
-        language="en",
-    )
-    db.add(preferences)
-    db.commit()
-    db.refresh(preferences)
-
-  return preferences
+  return UserPreferencesService.get_or_create_preferences(
+      db=db,
+      user_id=current_user.id,
+  )
 
 
 @router.patch(
@@ -85,29 +72,10 @@ def update_user_preferences(
     Updated user preferences object.
 
   Raises:
-    HTTPException: If preferences don't exist (should not happen).
     ValidationError: If timezone is not a valid IANA timezone.
   """
-  # Get or create preferences
-  preferences = db.query(UserPreferences).filter(
-      UserPreferences.user_id == current_user.id).first()
-
-  if not preferences:
-    # Create default preferences if they don't exist
-    preferences = UserPreferences(
-        user_id=current_user.id,
-        preferred_currency="CAD",
-        timezone="UTC",
-        language="en",
-    )
-    db.add(preferences)
-
-  # Update only provided fields
-  update_data = preferences_update.model_dump(exclude_unset=True)
-  for field, value in update_data.items():
-    setattr(preferences, field, value)
-
-  db.commit()
-  db.refresh(preferences)
-
-  return preferences
+  return UserPreferencesService.update_preferences(
+      db=db,
+      user_id=current_user.id,
+      preferences_update=preferences_update,
+  )
